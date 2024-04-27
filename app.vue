@@ -1,5 +1,12 @@
+<script setup lang="ts">
+
+
+</script>
+
 <template>
+
   <div>
-    <NuxtWelcome />
+    <ElButton type="primary">123</ElButton>
+    <!-- <NuxtWelcome /> -->
   </div>
 </template>
