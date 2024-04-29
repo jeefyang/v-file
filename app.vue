@@ -40,6 +40,8 @@ const handleSelect = (index: string) => {
   position: fixed;
   height: calc(100% - 35px);
   top: 40px;
+  width: calc(100% - 10px);
+  left: 5px;
 }
 
 .menu {

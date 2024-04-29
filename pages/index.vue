@@ -2,7 +2,8 @@
 
 </script>
 <template>
-    <editor></editor>
+    <manage></manage>
+    <!-- <editor></editor> -->
     <!-- <div>index!!!</div> -->
 </template>
 <style scoped></style>
