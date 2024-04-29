@@ -12,7 +12,8 @@ export default defineEventHandler(async (e) => {
     }
     url = path.join(body.baseDir, body.url)
     let files = fs.readdirSync(url)
-    let list: FileStatusType[] = []
+    let fileList: FileStatusType[] = []
+    let folderList: FileStatusType[] = []
     let regList: RegExp[] = []
     let glist = body.ignore.split("||")
     for (let i = 0; i < glist.length; i++) {
@@ -50,8 +51,8 @@ export default defineEventHandler(async (e) => {
             size: status.size,
             isDir: status.isDirectory()
         }
-        list.push(a)
+        a.isDir ? (folderList.push(a)) : (fileList.push(a))
     }
 
-    return { url: body.url, baseDir: body.baseDir, list: list }
+    return { url: body.url, baseDir: body.baseDir, list: [...folderList, ...fileList] }
 })

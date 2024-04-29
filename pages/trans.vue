@@ -1,7 +1,7 @@
 <script setup lang="ts">
-
+const editorFilter = useEditorFilter()
 </script>
 <template>
-    <div>trans!!!</div>
+    <div>{{ editorFilter }}</div>
 </template>
 <style scoped></style>
