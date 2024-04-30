@@ -5,7 +5,7 @@ import { FileStatusType, PostFileListType } from "~/typings"
 
 export default defineEventHandler(async (e) => {
     const body: PostFileListType = await readBody(e)
-    console.log(123, body)
+    console.log(123)
     let url = path.join(body.baseDir, body.url)
     if (!fs.existsSync(url)) {
         body.url = '.'

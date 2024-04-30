@@ -1,7 +1,15 @@
 <script setup lang="ts">
+import { useDark, useToggle } from '@vueuse/core'
+import { useRoute } from 'vue-router';
 
 
-const nuxtApp = useNuxtApp()
+
+const editorFileUrl = useEidtorFileUrl()
+const toRouter = useToRouter()
+const isDark = useDark()
+useToggle(isDark)
+const route = useRoute();
+
 // console.log(nuxtApp)
 
 
@@ -10,16 +18,37 @@ const handleSelect = (index: string) => {
   console.log(index)
 }
 
+const changeRouter = (p?: string, isToRouter?: boolean) => {
+  let list: { index: string, router: string }[] = [
+    { "index": "1", router: "/" },
+    { "index": "2", router: "/text" },
+    { "index": "3", router: "/trans" },
+  ]
+  activeIndex.value = list.find(c => c.router == p || toRouter.value)?.index || "1"
+  if (isToRouter) {
+    navigateTo(toRouter.value)
+  }
+}
+
+watch([toRouter], () => {
+  changeRouter(undefined, true)
+})
+changeRouter(route.path)
+
 </script>
 
 <template>
+
   <div class="top">
     <el-menu :default-active="activeIndex" class="menu" mode="horizontal" @select="handleSelect">
-      <el-menu-item index="1">
-        <NuxtLink to="/">管理器</NuxtLink>
+      <el-menu-item index="1" @click="toRouter = '/'">
+        管理器
       </el-menu-item>
-      <el-menu-item index="2">
-        <NuxtLink to="/trans">传输</NuxtLink>
+      <el-menu-item index="2" :disabled="!editorFileUrl" @click="toRouter = '/text'">
+        文本
+      </el-menu-item>
+      <el-menu-item index="3" @click="toRouter = '/trans'">
+        传输
       </el-menu-item>
     </el-menu>
   </div>

@@ -3,9 +3,19 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: [
-    '@element-plus/nuxt', "nuxt-monaco-editor"],
-  css: ['element-plus/dist/index.css',"element-plus/theme-chalk/dark/css-vars.css"],
+    "nuxt-monaco-editor",
+  '@element-plus/nuxt',
+  '@nuxtjs/color-mode'
+],
+  monacoEditor: {
+    // These are default values:
+    locale: 'zh-hans',
+    componentName: {
+      codeEditor: 'MonacoEditor',
+      diffEditor: 'MonacoDiffEditor',
+    }
+  },
   elementPlus: {
-    "themes": ["dark"]
+    themes: ["dark"]
   }
 })

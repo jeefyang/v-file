@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@element-plus/nuxt": "^1.0.9",
+    "@nuxtjs/color-mode": "^3.4.1",
     "@vueuse/core": "^10.9.0"
   }
 }

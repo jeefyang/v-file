@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PostFileListType, FileStatusType } from '~/typings';
+import type { PostFileListType, FileStatusType, PostFileContentType } from '~/typings';
 //@ts-ignore
 import { Files, Folder } from '@element-plus/icons-vue'
 
@@ -9,6 +9,7 @@ const editorFileUrl = useEidtorFileUrl()
 const manageLoading = useManageLoading()
 const displayEditorFile = useDisplayEditorFile()
 const fileContentLoading = useFileContentLoading()
+const fileContent = useFileContent()
 const urlList = ref([""])
 const fileList = ref(<FileStatusType[]>[])
 const postFileList = async () => {
@@ -60,6 +61,26 @@ const onopen = async (row: FileStatusType) => {
     editorFileUrl.value = urlList.value.join('/') + `/${row.name}`
     fileContentLoading.value = true
     displayEditorFile.value = true
+    navigateTo('/text')
+    fileContentLoading.value = true
+    await new Promise((res)=>{
+        setTimeout(() => {
+            res(undefined)
+        }, 2000);
+    })
+    let o = await useFetch('/api/fileContent', {
+        method: "post",
+        body: {
+            baseDir: config.data.value?.baseDir,
+            url: urlList.value.join('/'),
+            name: row.name,
+            type: "utf-8"
+        } as PostFileContentType
+    })
+    if (o.data.value?.isExist) {
+        fileContent.value = o.data.value.content || ""
+        fileContentLoading.value = false
+    }
     // editorFileUrl.value.push()
 
 }

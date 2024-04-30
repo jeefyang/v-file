@@ -1,12 +1,10 @@
 <script setup lang="ts">
 // const fileUrl = useFileUrl()
-const displayEditorFile = useDisplayEditorFile()
+
 </script>
 <template>
     <manage></manage>
-    <div v-if="displayEditorFile" class="editor">
-        <editor></editor>
-    </div>
+    
     <!-- <editor></editor> -->
     <!-- <div>index!!!</div> -->
 </template>

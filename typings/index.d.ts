@@ -11,6 +11,19 @@ type PostFileListType = {
     ignore: string
 }
 
+type PostFileContentType = {
+    baseDir: string
+    url: string
+    name: string
+    type?:"utf-8"|"base64"|"ascii"|"base64url"
+}
+
+type PostFileContentReturnType = {
+    content?: string
+    isExist: boolean
+    url: string
+}
+
 type FileStatusType = {
     name: string
     atimeMs: number
