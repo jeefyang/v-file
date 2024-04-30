@@ -1,5 +1,10 @@
 <script setup lang="ts">
 
+
+const nuxtApp = useNuxtApp()
+// console.log(nuxtApp)
+
+
 const activeIndex = ref("1")
 const handleSelect = (index: string) => {
   console.log(index)

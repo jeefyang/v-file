@@ -1,22 +1,32 @@
 <script setup lang="ts">
 import type { PostFileListType, FileStatusType } from '~/typings';
+//@ts-ignore
+import { Files, Folder } from '@element-plus/icons-vue'
 
 const config = await useFetch("/api/getConfig")
 const editorFilter = useEditorFilter()
-const urlList = ref(["."])
-let p: PostFileListType = {
-    baseDir: config.data.value?.baseDir || "./",
-    url: urlList.value.join('/'),
-    ignore: (config.data.value?.ignore || []).join("||")
+const editorFileUrl = useEidtorFileUrl()
+const manageLoading = useManageLoading()
+const displayEditorFile = useDisplayEditorFile()
+const fileContentLoading = useFileContentLoading()
+const urlList = ref([""])
+const fileList = ref(<FileStatusType[]>[])
+const postFileList = async () => {
+    const a = await useFetch("/api/fileList", {
+        method: "post",
+        body: <PostFileListType>{
+            baseDir: config.data.value?.baseDir || "./",
+            url: urlList.value.join('/'),
+            ignore: (config.data.value?.ignore || []).join("||")
+        },
+        deep: false
+    })
+    fileList.value.splice(0, fileList.value.length)
+    fileList.value.push(...a.data.value?.list || [])
 }
-console.log(p)
-const fileList = await useFetch("/api/fileList", {
-    method: "post",
-    body: p,
-    // headers:{
-    //     "Content-Type":"multipart/form-data"
-    // }
-})
+
+await postFileList()
+
 
 const formatDateFunc = (row: FileStatusType, _col: any, cell: string) => {
     return formatDate(Number(cell))
@@ -39,40 +49,86 @@ const tableRowClassName = ({ row }: {
     }
 }
 
+const onopen = async (row: FileStatusType) => {
+    if (row.isDir) {
+        manageLoading.value = true
+        urlList.value.push(row.name)
+        await postFileList()
+        manageLoading.value = false
+        return
+    }
+    editorFileUrl.value = urlList.value.join('/') + `/${row.name}`
+    fileContentLoading.value = true
+    displayEditorFile.value = true
+    // editorFileUrl.value.push()
+
+}
+
+const onchangeRouter = async (v: string[]) => {
+    urlList.value = v
+    await postFileList()
+}
+
 </script>
 <template>
     <div class="big">
         <div class="top">
-            <el-input v-model="editorFilter" style="width: 240px" placeholder="过滤" />
+            <div>
+                <routerUrl v-model="urlList" @change-router="onchangeRouter"></routerUrl>
+            </div>
+            <div class="filterInput">
+                <el-input v-model="editorFilter" style="width: 150px" placeholder="过滤" />
+            </div>
+
+
         </div>
         <div class="content">
-            <el-table :data="filterFileListByName(fileList.data.value?.list || [], editorFilter)" lazy
-                highlight-current-row border style="width: 100%" :default-sort="{ prop: 'name', order: 'ascending' }"
-                height="100%" :row-class-name="tableRowClassName">
-                <el-table-column prop="name" sortable :sort-method="sortFileListByName" label="名称" width="180" />
+            <el-table :data="filterFileListByName(fileList || [], editorFilter)" lazy highlight-current-row border
+                style="width: 100%" :default-sort="{ prop: 'name', order: 'ascending' }" height="100%"
+                :row-class-name="tableRowClassName" v-loading="manageLoading">
+
+                <el-table-column prop="name" sortable :sort-method="sortFileListByName" label="名称" width="180">
+                    <template #default="scope">
+                        <div class="filename">
+                            <template v-if="scope.row.isDir">
+                                <el-icon color="#E6A23C" size="20">
+                                    <Folder />
+                                </el-icon>
+                            </template>
+                            <template v-if="!scope.row.isDir">
+                                <el-icon color="#fff" size="20">
+                                    <Files />
+                                </el-icon>
+                            </template>
+                            <div class="filename_interval"></div>
+                            <div class="filename_content">{{ scope.row.name }}</div>
+                        </div>
+
+                    </template>
+                </el-table-column>
                 <el-table-column prop="mtimeMs" sortable :sort-method="sortFileListByDate" label="修改时间"
-                    :formatter="formatDateFunc" width="180" />
+                    :formatter="formatDateFunc" width="120" />
                 <el-table-column prop="size" sortable :sort-method="sortFileListBySize" label="文件大小"
-                    :formatter="formatSizeFunc" width="180" />
-                <el-table-column fixed="right" label="操作" width="120">
+                    :formatter="formatSizeFunc" width="100" />
+                <el-table-column fixed="right" label="操作" width="100">
                     <template #default="scope">
                         <div>
+                            <el-button link type="primary" size="small" @click="onopen(scope.row)">
+                                打开
+                            </el-button>
                             <el-button link type="primary" size="small">
-                            打开
-                        </el-button>
-                        <el-button link type="primary" size="small">
-                            下载
-                        </el-button>
+                                下载
+                            </el-button>
                         </div>
-                       <div>
-                        <el-button link type="primary" size="small">
-                            删除
-                        </el-button>
-                        <el-button link type="primary" size="small">
-                            属性
-                        </el-button>
-                       </div>
-                       
+                        <div>
+                            <el-button link type="primary" size="small">
+                                删除
+                            </el-button>
+                            <el-button link type="primary" size="small">
+                                属性
+                            </el-button>
+                        </div>
+
                     </template>
                 </el-table-column>
             </el-table>
@@ -90,13 +146,18 @@ const tableRowClassName = ({ row }: {
 }
 
 .top {
-    height: 35px;
+    height: 70px;
+}
+
+.filterInput {
+    top: 5px;
+    position: relative;
 }
 
 .content {
     overflow: auto;
     top: 5px;
-    height: calc(100% - 40px);
+    height: calc(100% - 75px);
     position: relative;
     width: 100%;
 }
@@ -104,5 +165,20 @@ const tableRowClassName = ({ row }: {
 .el-table :deep(.folder) {
     /* --el-table-tr-bg-color: #272219 */
     --el-table-tr-bg-color: var(--el-color-warning-light-9);
+}
+
+.filename {
+    display: flex;
+    flex-direction: row;
+    /* justify-content: space-between; */
+}
+
+.filename_content {
+    word-break: break-all;
+}
+
+.filename_interval {
+    width: 5px;
+
 }
 </style>
