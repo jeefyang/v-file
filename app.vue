@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 
 
 
-const editorFileUrl = useEidtorFileUrl()
+const editorFileUrl = useEditorFileUrl()
 const toRouter = useToRouter()
 const isDark = useDark()
 useToggle(isDark)
@@ -20,20 +20,28 @@ const handleSelect = (index: string) => {
 
 const changeRouter = (p?: string, isToRouter?: boolean) => {
   let list: { index: string, router: string }[] = [
-    { "index": "1", router: "/" },
-    { "index": "2", router: "/text" },
-    { "index": "3", router: "/trans" },
+    { index: "1", router: "/" },
+    { index: "2", router: "/text" },
+    { index: "3", router: "/trans" },
   ]
-  activeIndex.value = list.find(c => c.router == p || toRouter.value)?.index || "1"
+  
+  activeIndex.value = list.find(c => c.router == (p || toRouter.value))?.index || "1"
   if (isToRouter) {
     navigateTo(toRouter.value)
   }
+
 }
 
-watch([toRouter], () => {
-  changeRouter(undefined, true)
+watch([toRouter], (v) => {
+  changeRouter(v[0], true)
 })
 changeRouter(route.path)
+
+if(route.path=="/text"){
+  console.log("initchange")
+  toRouter.value="/"
+  navigateTo('/')
+}
 
 </script>
 

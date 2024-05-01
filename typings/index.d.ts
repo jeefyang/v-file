@@ -15,7 +15,7 @@ type PostFileContentType = {
     baseDir: string
     url: string
     name: string
-    type?:"utf-8"|"base64"|"ascii"|"base64url"
+    type?: "utf-8" | "base64" | "ascii" | "base64url"
 }
 
 type PostFileContentReturnType = {
@@ -39,3 +39,6 @@ type FileStatusType = {
     uid: number
     isDir: boolean
 }
+
+type MonacoEditorLangType = "plaintext" | "bat" | "cpp" | "html" | "ini" | "c" | "csharp" | "css" | "dart" | "go" | "java" | "javascript" | "julia" | "kotlin" | "less" | "lua" | "mysql" | "objective-c" | "pascal" | "php" | "powershell" | "python" | "r" | "rust" | "shell" | "ruby" | "scss" | "sql" | "swift" | "typescript" | "vb" | "xml" | "yaml" |
+"json" | "coffeescript" | "markdown"|"perl"|"pug"

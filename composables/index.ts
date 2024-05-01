@@ -6,7 +6,7 @@ export const useEditorFilter = () => {
     return useState("editorFilter", () => "")
 }
 
-export const useEidtorFileUrl = () => {
+export const useEditorFileUrl = () => {
     return useState("editorFileUrl", () => "")
 }
 
@@ -29,7 +29,6 @@ export const useDisplayEditorFile = () => {
 export const useFileContent = () => {
     return useState("fileContent", () => "")
 }
-
 
 export const useToRouter = () => {
     return useState("toRouter", () => "")
