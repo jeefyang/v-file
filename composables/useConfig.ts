@@ -7,7 +7,7 @@ export default async function () {
     if (config.value) {
         return config
     }
-    let o = await useFetch("/api/getConfig")
-    config.value = o.data.value
+    let o = await $fetch("/api/getConfig")
+    config.value = o
     return config
 }

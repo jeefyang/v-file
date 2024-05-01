@@ -33,12 +33,12 @@ const changeRouter = (p?: string, isToRouter?: boolean) => {
 }
 
 watch([toRouter], (v) => {
+  console.log("router")
   changeRouter(v[0], true)
 })
 changeRouter(route.path)
 
 if(route.path=="/text"){
-  console.log("initchange")
   toRouter.value="/"
   navigateTo('/')
 }

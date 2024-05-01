@@ -5,6 +5,7 @@ import { PostFileContentType, PostFileContentReturnType } from "~/typings"
 
 export default defineEventHandler(async (e) => {
     const body:PostFileContentType = await readBody(e)
+    console.log(body)
     let url = path.join(body.baseDir, body.url, body.name)
     let o: PostFileContentReturnType = {
         isExist: true,

@@ -13,7 +13,7 @@ const displayEditorFile = useDisplayEditorFile()
 const fileContent = useFileContent()
 const toRouter = useToRouter()
 const postFileList = async () => {
-    const a = await useFetch("/api/fileList", {
+    const a = await $fetch("/api/fileList", {
         method: "post",
         body: <PostFileListType>{
             baseDir: config.value?.baseDir || "./",
@@ -23,7 +23,7 @@ const postFileList = async () => {
         deep: false
     })
     fileList.value.splice(0, fileList.value.length)
-    fileList.value.push(...a.data.value?.list || [])
+    fileList.value.push(...a?.list || [])
 }
 
 await postFileList()
@@ -38,11 +38,13 @@ const onopen = async (row: FileStatusType) => {
         return
     }
     editorFileUrl.value = urlList.value.join('/') + `/${row.name}`
+
     fileContentLoading.value = true
     displayEditorFile.value = true
-    toRouter.value='/text'
-    fileContentLoading.value = true
-    let o = await useFetch('/api/fileContent', {
+  
+    loading.value = true
+
+    let o = await $fetch('/api/fileContent', {
         method: "post",
         body: {
             baseDir: config.value?.baseDir,
@@ -51,9 +53,12 @@ const onopen = async (row: FileStatusType) => {
             type: "utf-8"
         } as PostFileContentType
     })
-    if (o.data.value?.isExist) {
-        fileContent.value = o.data.value.content || ""
-        fileContentLoading.value = false
+
+    if (o?.isExist) {
+        console.log(o.content)
+        fileContent.value = o?.content || ""
+        loading.value = false
+        toRouter.value = '/text'
     }
     // editorFileUrl.value.push()
 
@@ -83,14 +88,15 @@ const oprations: {
 <template>
     <div class="content">
         <!-- <el-col :span="24"> -->
-            <div>
-                <routerUrl v-model="urlList" @change-router="onchangeRouter"></routerUrl>
-            </div>
-            <el-input v-model="filterStr" style="width: 150px" placeholder="过滤" />
-            <div class="filelist">
-                <manage-file-list :file-list="fileList" :filter-key="filterStr" :loading="loading" :oprations="oprations"></manage-file-list>
-            </div>
-           
+        <div>
+            <routerUrl v-model="urlList" @change-router="onchangeRouter"></routerUrl>
+        </div>
+        <el-input v-model="filterStr" style="width: 150px" placeholder="过滤" />
+        <div class="filelist">
+            <manage-file-list :file-list="fileList" :filter-key="filterStr" :loading="loading"
+                :oprations="oprations"></manage-file-list>
+        </div>
+
         <!-- </el-col> -->
     </div>
 
@@ -106,11 +112,11 @@ const oprations: {
     width: calc(100% - 10px);
     height: calc(100% - 10px);
     /* overflow: auto; */
-    display:flex;
+    display: flex;
     flex-direction: column;
 }
 
-.filelist{
+.filelist {
     flex-grow: 1;
     overflow: auto;
 }
