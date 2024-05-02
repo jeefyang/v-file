@@ -11,6 +11,12 @@ type PostFileListType = {
     ignore: string
 }
 
+type PostFileListReturnType = {
+    url: string,
+    baseDir: string
+    list: FileStatusType[]
+}
+
 type PostFileContentType = {
     baseDir: string
     url: string
@@ -40,5 +46,58 @@ type FileStatusType = {
     isDir: boolean
 }
 
+type PostCreateFileType = {
+    isDir: boolean
+    url: string,
+    baseDir: string
+    name: string
+}
+
+type PostCreateFileReturnType = {
+    status: boolean
+    err: "none" | "exist"
+}
+
+
+type PostUploadFileType = {
+    url: string,
+    baseDir: string
+    files: FileList
+    isOverride?: boolean
+}
+
+type PostUploadFileReturnType = {
+    statusList: { name: string, isWrite: boolean }[]
+    status: boolean
+    err: "none"
+}
+
+
+type PostEditorFileType = {
+    url: string,
+    baseDir: string
+    name: string
+    content: string
+    type?: "utf-8" | "base64" | "ascii" | "base64url"
+}
+
+type PostEditorFileReturnType = {
+    status: boolean
+    err: "none" | "noExist" | "isDir"
+}
+
+type PostRenameFileType = {
+    url: string,
+    baseDir: string
+    name: string
+    rename: string
+    isDir: boolean
+}
+
+type PostRenameFileReturnType = {
+    status: boolean
+    err: "none" | "isDir" | "isFile" | "noExist"
+}
+
 type MonacoEditorLangType = "plaintext" | "bat" | "cpp" | "html" | "ini" | "c" | "csharp" | "css" | "dart" | "go" | "java" | "javascript" | "julia" | "kotlin" | "less" | "lua" | "mysql" | "objective-c" | "pascal" | "php" | "powershell" | "python" | "r" | "rust" | "shell" | "ruby" | "scss" | "sql" | "swift" | "typescript" | "vb" | "xml" | "yaml" |
-"json" | "coffeescript" | "markdown"|"perl"|"pug"
+    "json" | "coffeescript" | "markdown" | "perl" | "pug"

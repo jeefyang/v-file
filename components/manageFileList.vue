@@ -5,7 +5,7 @@ import type { FileStatusType } from '~/typings';
 defineProps<{
     fileList: FileStatusType[]
     filterKey: string
-    loading?: boolean
+    loading?: string
     oprations?: {
         name: string,
         clickfunc: (r: FileStatusType) => void
@@ -37,7 +37,7 @@ const formatSizeFunc = (row: FileStatusType, _col: any, cell: string) => {
 <template>
     <el-table :data="filterFileListByName(fileList || [], filterKey)" lazy highlight-current-row border
         style="width: 100%" :default-sort="{ prop: 'name', order: 'ascending' }" height="100%"
-        :row-class-name="tableRowClassName" v-loading="loading">
+        :row-class-name="tableRowClassName" v-loading="!!loading" :element-loading-text="loading">
 
         <el-table-column prop="name" sortable :sort-method="sortFileListByName" label="名称" width="180">
             <template #default="scope">

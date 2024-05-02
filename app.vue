@@ -33,7 +33,6 @@ const changeRouter = (p?: string, isToRouter?: boolean) => {
 }
 
 watch([toRouter], (v) => {
-  console.log("router")
   changeRouter(v[0], true)
 })
 changeRouter(route.path)

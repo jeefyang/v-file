@@ -1,8 +1,17 @@
 <script setup lang="ts">
-const displayEditorFile = useDisplayEditorFile()
-const fileContentLoading = useFileContentLoading()
 const fileContent = useFileContent()
 const editorFileUrl = useEditorFileUrl()
+
+const onsave = (content: string, readonly: boolean) => {
+    if (readonly) {
+        ElMessage({message:"现在是只读模式,无法保存!!!!",type:"warning"})
+        return
+    }
+    if(fileContent.value==content){
+        ElMessage({message:"文本检测为未修改,暂不保存!",type:"warning"})
+        return
+    }
+}
 
 </script>
 <template>
@@ -13,9 +22,9 @@ const editorFileUrl = useEditorFileUrl()
         <div class='editor'>
             <editor :props-content="fileContent" :url="editorFileUrl">
                 <template #default="scope">
-                    <el-button type="primary" @click="console.log(scope.content)">保存</el-button>
+                    <el-button type="primary" @click="onsave(scope.content,scope.readonly)">保存</el-button>
                 </template>
-            
+
             </editor>
         </div>
 

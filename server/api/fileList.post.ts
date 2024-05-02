@@ -1,7 +1,6 @@
 import fs from "fs"
 import path from "path"
-import { FileStatusType, PostFileListType } from "~/typings"
-
+import { FileStatusType, PostFileListReturnType, PostFileListType } from "~/typings"
 
 export default defineEventHandler(async (e) => {
     const body: PostFileListType = await readBody(e)
@@ -53,5 +52,5 @@ export default defineEventHandler(async (e) => {
         a.isDir ? (folderList.push(a)) : (fileList.push(a))
     }
 
-    return { url: body.url, baseDir: body.baseDir, list: [...folderList, ...fileList] }
+    return { url: body.url, baseDir: body.baseDir, list: [...folderList, ...fileList] } as PostFileListReturnType
 })

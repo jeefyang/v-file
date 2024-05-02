@@ -18,7 +18,7 @@ const langList: ([MonacoEditorLangType, ...string[]])[] = [
     ['csharp'],
     ['dart'],
     ['go'],
-    ['html'],
+    ['html','vue'],
     ['ini'],
     ['java'],
     ['javascript', 'js'],
@@ -54,21 +54,26 @@ const content = ref<string>("")
 const readOnly = ref(true)
 const opHeight = ref("")
 
-watch([() => props.url], () => {
-    if (!props.url) {
-        language.value = "plaintext"
-        return
-    }
-
-    let a = props.url.split('.')
+const changeLangByUrl = (url: string) => {
+    let a = url.split('.')
     let ex = a[a.length - 1] || ""
-    let f = langList.find(c => c.findIndex(cc => cc == ex) == -1)
+  
+    let f = langList.find(c => c.findIndex(cc => cc == ex) != -1)
     if (!f) {
         language.value = "plaintext"
     }
     else {
         language.value = f[0]
     }
+}
+
+watch([() => props.url], () => {
+    if (!props.url) {
+        language.value = "plaintext"
+        return
+    }
+
+    changeLangByUrl(props.url)
 })
 
 watch([() => props.propsLang], () => {
@@ -85,6 +90,9 @@ watch([() => props.propOPHeight], () => {
 
 content.value = props.propsContent || ""
 language.value = props.propsLang || "plaintext"
+if (props.url) {
+    changeLangByUrl(props.url)
+}
 opHeight.value = props.propOPHeight || "40px"
 
 const reback = () => {
@@ -95,7 +103,7 @@ const reback = () => {
 
     <div class="content_editor">
         <div class="editor_op" :style="{ height: opHeight }">
-            <slot :content="content"></slot>
+            <slot :content="content" :readonly='readOnly'></slot>
             <el-button type="primary" round @click="reback">
                 <el-icon size="30px" color="#fff">
                     <RefreshLeft />
