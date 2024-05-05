@@ -101,3 +101,13 @@ type PostRenameFileReturnType = {
 
 type MonacoEditorLangType = "plaintext" | "bat" | "cpp" | "html" | "ini" | "c" | "csharp" | "css" | "dart" | "go" | "java" | "javascript" | "julia" | "kotlin" | "less" | "lua" | "mysql" | "objective-c" | "pascal" | "php" | "powershell" | "python" | "r" | "rust" | "shell" | "ruby" | "scss" | "sql" | "swift" | "typescript" | "vb" | "xml" | "yaml" |
     "json" | "coffeescript" | "markdown" | "perl" | "pug"
+
+type ManageFileListoprationChildType = {
+    name: string,
+    clickfunc?: (r: FileStatusType) => void
+}
+
+type ManageFileListoprationType = {
+
+    children?: ManageFileListoprationChildType[]
+} & ManageFileListoprationChildType

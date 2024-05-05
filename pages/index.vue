@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FileStatusType, PostCreateFileType, PostFileContentType, PostUploadFileType } from '~/typings';
+import type { FileStatusType, ManageFileListoprationType, PostCreateFileType, PostFileContentType, PostUploadFileType } from '~/typings';
 import { RefreshLeft } from '@element-plus/icons-vue'
 
 // const fileUrl = useFileUrl()
@@ -85,15 +85,17 @@ const onchangeRouter = async (v: string[]) => {
     await postFileList()
 }
 
-const oprations: {
-    name: string
-    clickfunc: (r: FileStatusType) => void
-}[][] = [[
+const oprations: ManageFileListoprationType[][] = [[
     { name: "打开", clickfunc: onopen },
-    { name: "下载", clickfunc: ontest }
+    { name: "属性", clickfunc: onproperty }
 ], [
     { name: "删除", clickfunc: ontest },
-    { name: "属性", clickfunc: onproperty }
+    {
+        name: "更多", children: [
+            { name: "重命名", clickfunc: ontest },
+            { name: "测试", clickfunc: ontest }
+        ]
+    },
 ]]
 
 const forcePostFileList = async () => {

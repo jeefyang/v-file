@@ -1,16 +1,41 @@
 <script setup lang="ts">
-import { Files, Folder } from '@element-plus/icons-vue'
-import type { FileStatusType } from '~/typings';
+import { Files, Folder, ArrowDown } from '@element-plus/icons-vue'
+import type { FileStatusType, ManageFileListoprationType, ManageFileListoprationChildType } from '~/typings';
+import { onClickOutside } from "@vueuse/core"
 
 defineProps<{
     fileList: FileStatusType[]
     filterKey: string
     loading?: string
-    oprations?: {
-        name: string,
-        clickfunc: (r: FileStatusType) => void
-    }[][]
+    oprations?: ManageFileListoprationType[][]
 }>()
+
+const alertDiv = ref<HTMLDivElement>()
+const displayAlertDiv = ref<{ x: number, y: number }>()
+const alertDivChildren = ref<ManageFileListoprationChildType[]>([])
+const alertDivRow = ref<FileStatusType>()
+onMounted(() => {
+
+    onClickOutside(alertDiv.value, (e) => {
+        if (!displayAlertDiv.value) {
+            return
+        }
+        displayAlertDiv.value = <any>(null)
+       
+    })
+})
+
+const oprationMoreClick = (e: MouseEvent, v: FileStatusType, children: ManageFileListoprationChildType[]) => {
+    alertDivRow.value = v
+    alertDivChildren.value = [...children]
+    if (!displayAlertDiv.value) {
+        displayAlertDiv.value = { x: e.clientX, y: e.clientY }
+    }
+    else {
+        displayAlertDiv.value = <any>(null)
+    }
+
+}
 
 const tableRowClassName = ({ row }: {
     row: FileStatusType
@@ -62,16 +87,30 @@ const formatSizeFunc = (row: FileStatusType, _col: any, cell: string) => {
             :formatter="formatDateFunc" width="120" />
         <el-table-column prop="size" sortable :sort-method="sortFileListBySize" label="文件大小" :formatter="formatSizeFunc"
             width="100" />
+        <!-- 额外操作 -->
         <el-table-column v-if="oprations" fixed="right" label="操作" width="100">
             <template #default="scope">
-                <div v-for="c in oprations">
-                    <el-button v-for="cc in c" link type="primary" size="small" @click="cc.clickfunc(scope.row)">
-                        {{ cc.name }}
-                    </el-button>
+                <div class="flexDiv" v-for="c in oprations">
+                    <template v-for="cc in c">
+                        <el-button link type="primary" size="small"
+                            @click="(cc.clickfunc ? cc?.clickfunc(scope.row) : oprationMoreClick($event, scope.row, cc?.children || []))">
+                            {{ cc.name }}
+                        </el-button>
+                    </template>
                 </div>
             </template>
         </el-table-column>
     </el-table>
+    <div ref="alertDiv" class="alert" v-show="!!displayAlertDiv"
+        :style="{ left: (displayAlertDiv?.x || 0) + 'px', top: (displayAlertDiv?.y || 0) + 'px' }">
+        <div v-for="c in alertDivChildren">
+            <el-button link type="primary" size="small"
+                @click="c.clickfunc && c?.clickfunc(<any>alertDivRow); displayAlertDiv = <any>null">
+                {{ c.name }}
+            </el-button>
+        </div>
+
+    </div>
 </template>
 <style scoped>
 .el-table :deep(.folder) {
@@ -93,4 +132,27 @@ const formatSizeFunc = (row: FileStatusType, _col: any, cell: string) => {
     width: 5px;
 
 }
+
+.alert {
+    position: fixed;
+    /* width: 100px; */
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    translate: -50% 10px;
+    align-items: center;
+    align-content: center;
+    background-color: #141414;
+    padding: 10px;
+}
+
+.alert div{
+    margin: 5px;
+}
+
+/* 
+.flexDiv {
+    display: flex;
+    justify-content: space-between;
+} */
 </style>
