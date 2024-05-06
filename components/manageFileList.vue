@@ -10,6 +10,12 @@ defineProps<{
     oprations?: ManageFileListoprationType[][]
 }>()
 
+const emits = defineEmits<{
+    colClick: [key: string, row: FileStatusType],
+    colDblclick: [key: string, row: FileStatusType]
+    colContextmenu: [key: string, row: FileStatusType]
+}>()
+
 const alertDiv = ref<HTMLDivElement>()
 const displayAlertDiv = ref<{ x: number, y: number }>()
 const alertDivChildren = ref<ManageFileListoprationChildType[]>([])
@@ -21,9 +27,23 @@ onMounted(() => {
             return
         }
         displayAlertDiv.value = <any>(null)
-       
+
     })
 })
+
+const onColClick = (r: FileStatusType, c: { property: string }, cell: HTMLTableCellElement) => {
+    // console.log(c.property)
+    emits("colClick", c.property, r)
+}
+
+const onColDblclick = (r: FileStatusType, c: { property: string }, cell: HTMLTableCellElement) => {
+    console.log(c.property)
+    emits("colDblclick", c.property, r)
+}
+
+const onColContextmenu = (r: FileStatusType, c: { property: string }, cell: HTMLTableCellElement) => {
+    emits("colContextmenu", c.property, r)
+}
 
 const oprationMoreClick = (e: MouseEvent, v: FileStatusType, children: ManageFileListoprationChildType[]) => {
     alertDivRow.value = v
@@ -62,7 +82,8 @@ const formatSizeFunc = (row: FileStatusType, _col: any, cell: string) => {
 <template>
     <el-table :data="filterFileListByName(fileList || [], filterKey)" lazy highlight-current-row border
         style="width: 100%" :default-sort="{ prop: 'name', order: 'ascending' }" height="100%"
-        :row-class-name="tableRowClassName" v-loading="!!loading" :element-loading-text="loading">
+        :row-class-name="tableRowClassName" v-loading="!!loading" :element-loading-text="loading"
+        @cell-click="onColClick" @cell-dblclick="onColDblclick" @cell-contextmenu="onColContextmenu">
 
         <el-table-column prop="name" sortable :sort-method="sortFileListByName" label="名称" width="180">
             <template #default="scope">
@@ -142,11 +163,11 @@ const formatSizeFunc = (row: FileStatusType, _col: any, cell: string) => {
     translate: -50% 10px;
     align-items: center;
     align-content: center;
-    background-color: #141414;
+    background-color: #323232;
     padding: 10px;
 }
 
-.alert div{
+.alert div {
     margin: 5px;
 }
 

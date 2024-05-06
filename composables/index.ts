@@ -1,3 +1,5 @@
+import type { EditorFileTypeType } from "~/typings"
+
 export const useTest = () => {
     return useState("test", () => false)
 }
@@ -7,7 +9,7 @@ export const useEditorFilter = () => {
 }
 
 export const useEditorFileUrl = () => {
-    return useState("editorFileUrl", () => "")
+    return useState("editorFileUrl", () => <string[]>[])
 }
 
 export const useDisplayEditorFile = () => {
@@ -16,6 +18,10 @@ export const useDisplayEditorFile = () => {
 
 export const useFileContent = () => {
     return useState("fileContent", () => "")
+}
+
+export const useFileContentType = () => {
+    return useState("fileContentType", () => <EditorFileTypeType>"utf-8")
 }
 
 export const useToRouter = () => {

@@ -1,6 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
 export default defineNuxtConfig({
+  devServer:{
+    host:"192.168.123.120",
+    port:3001
+  },
   devtools: { enabled: true },
   modules: [
     "nuxt-monaco-editor",

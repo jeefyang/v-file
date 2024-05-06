@@ -72,14 +72,27 @@ type PostUploadFileReturnType = {
     err: "none"
 }
 
+type PostDelFileType = {
+    url: string,
+    baseDir: string
+    name: string
+    isDir: boolean
+}
+
+type PostDelFileReturnType = {
+    status: boolean
+    err: "none" | "noExist" | "noDel"
+}
 
 type PostEditorFileType = {
     url: string,
     baseDir: string
     name: string
     content: string
-    type?: "utf-8" | "base64" | "ascii" | "base64url"
+    type?: EditorFileTypeType
 }
+
+type EditorFileTypeType = "utf-8" | "base64" | "ascii" | "base64url"
 
 type PostEditorFileReturnType = {
     status: boolean

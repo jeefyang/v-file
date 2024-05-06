@@ -5,6 +5,7 @@ import { PostEditorFileType, PostEditorFileReturnType } from "~/typings"
 
 export default defineEventHandler(async (e) => {
     const body: PostEditorFileType = await readBody(e)
+    console.log(body)
     let url = path.join(body.baseDir, body.url, body.name)
     let r: PostEditorFileReturnType = {
         status: false,

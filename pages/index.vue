@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FileStatusType, ManageFileListoprationType, PostCreateFileType, PostFileContentType, PostUploadFileType } from '~/typings';
+import type { EditorFileTypeType, FileStatusType, ManageFileListoprationType, PostCreateFileType, PostDelFileType, PostFileContentType, PostRenameFileType, PostUploadFileType } from '~/typings';
 import { RefreshLeft } from '@element-plus/icons-vue'
 
 // const fileUrl = useFileUrl()
@@ -11,7 +11,10 @@ const loading = ref("")
 const editorFileUrl = useEditorFileUrl()
 const displayEditorFile = useDisplayEditorFile()
 const fileContent = useFileContent()
+const fileContentType = useFileContentType()
 const toRouter = useToRouter()
+const popLoading = ref("")
+let selectFileStatus: FileStatusType | null = null
 const postFileList = async (forceRefresh?: boolean) => {
     const a = await useFileList({
         baseDir: config.value?.baseDir || "./",
@@ -25,7 +28,7 @@ const postFileList = async (forceRefresh?: boolean) => {
 await postFileList()
 
 
-const onopen = async (row: FileStatusType) => {
+const onopen = async (row: FileStatusType, type: EditorFileTypeType = "utf-8") => {
     if (row.isDir) {
         loading.value = "正在打开文件夹"
         urlList.value.push(row.name)
@@ -33,7 +36,7 @@ const onopen = async (row: FileStatusType) => {
         loading.value = ""
         return
     }
-    editorFileUrl.value = urlList.value.join('/') + `/${row.name}`
+    editorFileUrl.value = [config.value?.baseDir || "", urlList.value.join('/'), row.name]
 
     displayEditorFile.value = true
 
@@ -45,7 +48,7 @@ const onopen = async (row: FileStatusType) => {
             baseDir: config.value?.baseDir,
             url: urlList.value.join('/'),
             name: row.name,
-            type: "utf-8"
+            type: type
         } as PostFileContentType
     })
 
@@ -55,7 +58,37 @@ const onopen = async (row: FileStatusType) => {
         toRouter.value = '/text'
     }
     // editorFileUrl.value.push()
+}
 
+const ondel = async (row: FileStatusType) => {
+
+    await ElMessageBox.confirm(`确定要删除 ${row.name} 文件吗?`)
+    let body: PostDelFileType = {
+        baseDir: config.value?.baseDir || "",
+        url: urlList.value.join('/'),
+        name: row.name,
+        isDir: row.isDir
+    }
+    let o = await $fetch('/api/delFile', {
+        method: "post",
+        body: body
+    })
+
+    if (o.status) {
+        ElMessage({ message: "删除成功", type: "success" })
+        loading.value = "重新当前列表"
+        await postFileList(true)
+        loading.value = ""
+        return
+    }
+    if (o.err == "noExist") {
+        ElMessage({ message: "当前文件(夹)不存在,无法删除", type: "warning" })
+        return
+    }
+    if (o.err == "noDel") {
+        ElMessage({ message: "当前文件(夹)无法删除", type: "error" })
+        return
+    }
 }
 
 const onproperty = (row: FileStatusType) => {
@@ -76,8 +109,8 @@ const onproperty = (row: FileStatusType) => {
     console.log('用户执行:', execute);
 }
 
-const ontest = () => {
-    console.log('测试')
+const ontest = (r: any) => {
+    console.log(r)
 }
 
 const onchangeRouter = async (v: string[]) => {
@@ -85,18 +118,84 @@ const onchangeRouter = async (v: string[]) => {
     await postFileList()
 }
 
+const renameVisible = ref(false)
+const renameVal = ref("")
+const curnameVal = ref("")
+const onrenameInit = (r: FileStatusType) => {
+    selectFileStatus = r
+    renameVal.value = r.name
+    curnameVal.value = r.name
+    renameVisible.value = true
+}
+const onrename = async () => {
+    if (!selectFileStatus) {
+        ElMessage({ message: "没有选中文件(夹)", type: "warning" })
+        renameVisible.value = false
+        return
+    }
+    if (renameVal.value == selectFileStatus.name) {
+        ElMessage({ message: "名字一致,并没有修改!!!", type: "warning" })
+        return
+    }
+    if (!renameVal.value) {
+        ElMessage({ message: "名字为空,请输入名字!", type: "warning" })
+        return
+    }
+    let body: PostRenameFileType = {
+        baseDir: config.value?.baseDir || "",
+        url: urlList.value.join('/'),
+        name: selectFileStatus.name,
+        rename: renameVal.value,
+        isDir: selectFileStatus.isDir
+    }
+    popLoading.value = '正在修改名字'
+    let res = await $fetch("/api/renameFile", {
+        body: body,
+        method: 'post'
+    })
+    popLoading.value = ""
+    if (res.status) {
+        ElMessage({ message: "修改名字成功!", type: "success" })
+        renameVisible.value = false
+        loading.value = "正在刷新当前列表"
+        await postFileList(true)
+        loading.value = ""
+        return
+    }
+    if (res.err == "isDir") {
+        ElMessage({ message: "当前修改的是文件,服务器则为文件夹,不允许交叉修改!", type: "warning" })
+        renameVisible.value = false
+        return
+    }
+    if (res.err == "isFile") {
+        ElMessage({ message: "当前修改的是文件夹,服务器则为文件,不允许交叉修改!", type: "warning" })
+        return
+    }
+    if (res.err == "noExist") {
+        ElMessage({ message: "文件(夹)不存在!", type: "warning" })
+        return
+    }
+}
+
 const oprations: ManageFileListoprationType[][] = [[
     { name: "打开", clickfunc: onopen },
     { name: "属性", clickfunc: onproperty }
 ], [
-    { name: "删除", clickfunc: ontest },
+    { name: "删除", clickfunc: ondel },
     {
         name: "更多", children: [
-            { name: "重命名", clickfunc: ontest },
+            { name: "重命名", clickfunc: onrenameInit },
             { name: "测试", clickfunc: ontest }
         ]
     },
 ]]
+
+const oncolDblclick = async (key: string, r: FileStatusType) => {
+    if (key != "name") {
+        return
+    }
+    await onopen(r)
+}
 
 const forcePostFileList = async () => {
     loading.value = "正在刷新文件夹"
@@ -113,7 +212,7 @@ const onupload = async (list: FileList) => {
     for (let i = 0; i < list.length; i++) {
         form.append("files[]", list[i])
     }
-    loading.value = "正在上传文件"
+    popLoading.value = "正在上传文件"
     const o = await $fetch("/api/uploadFile", {
         method: "post",
         body: form,
@@ -121,6 +220,7 @@ const onupload = async (list: FileList) => {
         //     'Content-type': "multipart/form-data; boundary=ABC"
         // }
     })
+    popLoading.value = ""
     if (o.status) {
         ElMessage({ message: "上传成功!", type: "success" })
         loading.value = "正在刷新当前路径"
@@ -132,6 +232,8 @@ const onupload = async (list: FileList) => {
     loading.value = ""
     ElMessage({ message: "上传失败,请查看服务器代码", type: "error" })
 }
+
+
 
 const oncreate = async (name: string, isDir: boolean) => {
 
@@ -173,9 +275,7 @@ const oncreate = async (name: string, isDir: boolean) => {
             <el-button type="primary" @click="uploadVisible = true">
                 上传
             </el-button>
-            <el-drawer v-model="uploadVisible" :show-close="false" direction='ttb'>
-                <fileUpload @upload="onupload"></fileUpload>
-            </el-drawer>
+
 
             <!-- 间隔 -->
             <div style="width:10px"></div>
@@ -202,14 +302,31 @@ const oncreate = async (name: string, isDir: boolean) => {
 
 
         <div class="filelist">
-            <manage-file-list :file-list="fileList" :filter-key="filterStr" :loading="loading"
-                :oprations="oprations"></manage-file-list>
+            <manage-file-list :file-list="fileList" :filter-key="filterStr" :loading="loading" :oprations="oprations"
+                @col-dblclick="oncolDblclick"></manage-file-list>
         </div>
 
         <!-- </el-col> -->
     </div>
 
+    <!-- 上传弹出层 -->
+    <el-drawer v-model="uploadVisible" :show-close="false" direction='ttb' :loading="popLoading">
+        <fileUpload @upload="onupload"></fileUpload>
+    </el-drawer>
 
+    <!-- 修改名字弹出层 -->
+    <el-drawer v-model="renameVisible" :show-close="false" direction='rtl' :loading="popLoading" size="50%">
+        <div class="margin">
+            <el-text>{{ curnameVal }}</el-text>
+        </div>
+        <div class="margin">
+            <el-input v-model="renameVal" placeholder="请输入名字" />
+        </div>
+
+        <div class="margin">
+            <el-button type="primary" @click="onrename">确认</el-button>
+        </div>
+    </el-drawer>
     <!-- <editor></editor> -->
     <!-- <div>index!!!</div> -->
 </template>
@@ -228,5 +345,9 @@ const oncreate = async (name: string, isDir: boolean) => {
 .filelist {
     flex-grow: 1;
     overflow: auto;
+}
+
+.margin {
+    margin-bottom: 10px;
 }
 </style>

@@ -51,7 +51,7 @@ if(route.path=="/text"){
       <el-menu-item index="1" @click="toRouter = '/'">
         管理器
       </el-menu-item>
-      <el-menu-item index="2" :disabled="!editorFileUrl" @click="toRouter = '/text'">
+      <el-menu-item index="2" :disabled="editorFileUrl.length!=3" @click="toRouter = '/text'" >
         文本
       </el-menu-item>
       <el-menu-item index="3" @click="toRouter = '/trans'">
