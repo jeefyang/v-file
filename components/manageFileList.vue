@@ -8,12 +8,14 @@ defineProps<{
     filterKey: string
     loading?: string
     oprations?: ManageFileListoprationType[][]
+    isSelection?: boolean
 }>()
 
 const emits = defineEmits<{
     colClick: [key: string, row: FileStatusType],
-    colDblclick: [key: string, row: FileStatusType]
-    colContextmenu: [key: string, row: FileStatusType]
+    colDblclick: [key: string, row: FileStatusType],
+    colContextmenu: [key: string, row: FileStatusType],
+    colSelect: [rows: FileStatusType[]]
 }>()
 
 const alertDiv = ref<HTMLDivElement>()
@@ -43,6 +45,10 @@ const onColDblclick = (r: FileStatusType, c: { property: string }, cell: HTMLTab
 
 const onColContextmenu = (r: FileStatusType, c: { property: string }, cell: HTMLTableCellElement) => {
     emits("colContextmenu", c.property, r)
+}
+
+const onColSelect = (rs: FileStatusType[]) => {
+    emits("colSelect", rs)
 }
 
 const oprationMoreClick = (e: MouseEvent, v: FileStatusType, children: ManageFileListoprationChildType[]) => {
@@ -78,13 +84,19 @@ const formatSizeFunc = (row: FileStatusType, _col: any, cell: string) => {
     return formatSize(size)
 }
 
+
 </script>
 <template>
     <el-table :data="filterFileListByName(fileList || [], filterKey)" lazy highlight-current-row border
         style="width: 100%" :default-sort="{ prop: 'name', order: 'ascending' }" height="100%"
         :row-class-name="tableRowClassName" v-loading="!!loading" :element-loading-text="loading"
-        @cell-click="onColClick" @cell-dblclick="onColDblclick" @cell-contextmenu="onColContextmenu">
+        @cell-click="onColClick" @cell-dblclick="onColDblclick" @cell-contextmenu="onColContextmenu"
+        @selection-change="onColSelect">
 
+        <!-- 选择器 -->
+        <el-table-column v-if="isSelection" type="selection" width="45"></el-table-column>
+
+        <!-- 名称 -->
         <el-table-column prop="name" sortable :sort-method="sortFileListByName" label="名称" width="180">
             <template #default="scope">
                 <div class="filename">
@@ -104,8 +116,10 @@ const formatSizeFunc = (row: FileStatusType, _col: any, cell: string) => {
 
             </template>
         </el-table-column>
+        <!-- 修改时间 -->
         <el-table-column prop="mtimeMs" sortable :sort-method="sortFileListByDate" label="修改时间"
             :formatter="formatDateFunc" width="120" />
+        <!-- 文件大小 -->
         <el-table-column prop="size" sortable :sort-method="sortFileListBySize" label="文件大小" :formatter="formatSizeFunc"
             width="100" />
         <!-- 额外操作 -->

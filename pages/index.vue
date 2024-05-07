@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import type { EditorFileTypeType, FileStatusType, ManageFileListoprationType, PostCreateFileType, PostDelFileType, PostFileContentType, PostRenameFileType, PostUploadFileType } from '~/typings';
-import { RefreshLeft } from '@element-plus/icons-vue'
+
 
 // const fileUrl = useFileUrl()
 const config = await useConfig()
 const fileList = ref(<FileStatusType[]>[])
 const urlList = ref([""])
-const filterStr = ref("")
 const loading = ref("")
 const editorFileUrl = useEditorFileUrl()
 const displayEditorFile = useDisplayEditorFile()
@@ -113,9 +112,12 @@ const ontest = (r: any) => {
     console.log(r)
 }
 
-const onchangeRouter = async (v: string[]) => {
+const onchangeRouter = async (v: string[], forceUpdate: boolean) => {
+
     urlList.value = v
-    await postFileList()
+    loading.value = "正在刷新当前目录"
+    await postFileList(forceUpdate)
+    loading.value = ""
 }
 
 const renameVisible = ref(false)
@@ -197,11 +199,6 @@ const oncolDblclick = async (key: string, r: FileStatusType) => {
     await onopen(r)
 }
 
-const forcePostFileList = async () => {
-    loading.value = "正在刷新文件夹"
-    await postFileList(true)
-    loading.value = ""
-}
 
 const uploadVisible = ref(false)
 const onupload = async (list: FileList) => {
@@ -267,46 +264,30 @@ const oncreate = async (name: string, isDir: boolean) => {
 <template>
     <div class="content">
         <!-- <el-col :span="24"> -->
-        <div>
-            <routerUrl v-model="urlList" @change-router="onchangeRouter"></routerUrl>
-        </div>
-        <div style="display: flex">
-            <!-- 上传 -->
-            <el-button type="primary" @click="uploadVisible = true">
-                上传
-            </el-button>
+
+        <CompleteManageFileList :file-list="fileList" :url-list="urlList" @change-router="onchangeRouter"
+            :loading="loading" :oprations="oprations" @col-dblclick="oncolDblclick">
+            <template v-slot:option>
+                <!-- 上传 -->
+                <el-button type="primary" @click="uploadVisible = true">
+                    上传
+                </el-button>
 
 
-            <!-- 间隔 -->
-            <div style="width:10px"></div>
+                <!-- 间隔 -->
+                <div style="width:10px"></div>
 
-            <!-- 新建文件(夹) -->
-            <createFile :width="300" @create="oncreate">
-                <el-button type="primary">新建</el-button>
-            </createFile>
+                <!-- 新建文件(夹) -->
+                <createFile :width="300" @create="oncreate">
+                    <el-button type="primary">新建</el-button>
+                </createFile>
 
-            <!-- 间隔 -->
-            <div style="width:10px"></div>
-
-            <!-- 刷新 -->
-            <el-button type="primary" @click="forcePostFileList">
-                <el-icon size="30px" color="#fff">
-                    <RefreshLeft />
-                </el-icon>
-            </el-button>
-            <!-- 间隔 -->
-            <div style="width:10px"></div>
-            <!-- 过滤 -->
-            <el-input v-model="filterStr" style="width: 150px" placeholder="过滤" />
-        </div>
+                <!-- 间隔 -->
+                <div style="width:10px"></div>
 
 
-        <div class="filelist">
-            <manage-file-list :file-list="fileList" :filter-key="filterStr" :loading="loading" :oprations="oprations"
-                @col-dblclick="oncolDblclick"></manage-file-list>
-        </div>
-
-        <!-- </el-col> -->
+            </template>
+        </CompleteManageFileList>
     </div>
 
     <!-- 上传弹出层 -->
@@ -342,10 +323,7 @@ const oncreate = async (name: string, isDir: boolean) => {
     flex-direction: column;
 }
 
-.filelist {
-    flex-grow: 1;
-    overflow: auto;
-}
+
 
 .margin {
     margin-bottom: 10px;
