@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FileStatusType, ManageFileListoprationType } from '~/typings';
 import { RefreshLeft, Back } from '@element-plus/icons-vue'
+import type { VNodeRef } from 'vue';
 
 
 const filterStr = ref("")
@@ -10,7 +11,8 @@ const props = defineProps<{
     loading: string,
     oprations?: ManageFileListoprationType[][],
     fileList: FileStatusType[]
-    isSelection?: boolean
+    isSelection?: boolean,
+    clearSelect?: number
 }>()
 
 const urlListModel = ref(<string[]>[""])
@@ -96,7 +98,7 @@ const onreback = () => {
 
 
     <div class="filelist">
-        <manage-file-list :file-list="fileList" :filter-key="filterStr" :loading="loading" :oprations="oprations"
+        <manage-file-list :clear-select="clearSelect" :file-list="fileList" :filter-key="filterStr" :loading="loading" :oprations="oprations"
             :is-selection="isSelection" @col-dblclick="oncolDblclick" @col-click="oncolClick"
             @col-contextmenu="oncolContextmenu" @col-select="oncolSelect"></manage-file-list>
     </div>

@@ -2,13 +2,16 @@
 import { Files, Folder, ArrowDown } from '@element-plus/icons-vue'
 import type { FileStatusType, ManageFileListoprationType, ManageFileListoprationChildType } from '~/typings';
 import { onClickOutside } from "@vueuse/core"
+import type { VNodeRef } from 'vue';
+import type { ElTable } from 'element-plus';
 
-defineProps<{
+const props = defineProps<{
     fileList: FileStatusType[]
     filterKey: string
     loading?: string
     oprations?: ManageFileListoprationType[][]
     isSelection?: boolean
+    clearSelect?: number
 }>()
 
 const emits = defineEmits<{
@@ -22,6 +25,7 @@ const alertDiv = ref<HTMLDivElement>()
 const displayAlertDiv = ref<{ x: number, y: number }>()
 const alertDivChildren = ref<ManageFileListoprationChildType[]>([])
 const alertDivRow = ref<FileStatusType>()
+const multipleTableRef = ref<InstanceType<typeof ElTable>>()
 onMounted(() => {
 
     onClickOutside(alertDiv.value, (e) => {
@@ -30,6 +34,10 @@ onMounted(() => {
         }
         displayAlertDiv.value = <any>(null)
 
+    })
+
+    watch([() => props.clearSelect], () => {
+        multipleTableRef.value?.clearSelection()
     })
 })
 
@@ -87,8 +95,8 @@ const formatSizeFunc = (row: FileStatusType, _col: any, cell: string) => {
 
 </script>
 <template>
-    <el-table :data="filterFileListByName(fileList || [], filterKey)" lazy highlight-current-row border
-        style="width: 100%" :default-sort="{ prop: 'name', order: 'ascending' }" height="100%"
+    <el-table ref="multipleTableRef" :data="filterFileListByName(fileList || [], filterKey)" lazy highlight-current-row
+        border style="width: 100%" :default-sort="{ prop: 'name', order: 'ascending' }" height="100%"
         :row-class-name="tableRowClassName" v-loading="!!loading" :element-loading-text="loading"
         @cell-click="onColClick" @cell-dblclick="onColDblclick" @cell-contextmenu="onColContextmenu"
         @selection-change="onColSelect">
