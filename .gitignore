@@ -27,4 +27,6 @@ logs
 
 config.jsonc
 
+pnpm-lock.yaml
+
 test
