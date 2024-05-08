@@ -5,9 +5,8 @@ import { useRoute } from 'vue-router';
 
 
 const editorFileUrl = useEditorFileUrl()
+const updateTransMsg = useUpdateTransMsg()
 const toRouter = useToRouter()
-const isDark = useDark()
-useToggle(isDark)
 const route = useRoute();
 
 // console.log(nuxtApp)
@@ -23,24 +22,34 @@ const changeRouter = (p?: string, isToRouter?: boolean) => {
     { index: "1", router: "/" },
     { index: "2", router: "/text" },
     { index: "3", router: "/trans" },
+    { index: "4", router: "/transMsg" }
   ]
-  
+
   activeIndex.value = list.find(c => c.router == (p || toRouter.value))?.index || "1"
   if (isToRouter) {
     navigateTo(toRouter.value)
+    if (activeIndex.value == "4") {
+      updateTransMsg.value++
+    }
   }
 
 }
 
-watch([toRouter], (v) => {
-  changeRouter(v[0], true)
-})
-changeRouter(route.path)
+onMounted(() => {
+  const isDark = useDark()
+  useToggle(isDark)
+  watch([toRouter], (v) => {
+    changeRouter(v[0], true)
+  })
+  changeRouter(route.path)
 
-if(route.path=="/text"){
-  toRouter.value="/"
-  navigateTo('/')
-}
+  if (route.path == "/text") {
+    toRouter.value = "/"
+    navigateTo('/')
+  }
+})
+
+
 
 </script>
 
@@ -51,11 +60,14 @@ if(route.path=="/text"){
       <el-menu-item index="1" @click="toRouter = '/'">
         管理器
       </el-menu-item>
-      <el-menu-item index="2" :disabled="editorFileUrl.length!=3" @click="toRouter = '/text'" >
+      <el-menu-item index="2" :disabled="editorFileUrl.length != 3" @click="toRouter = '/text'">
         文本
       </el-menu-item>
       <el-menu-item index="3" @click="toRouter = '/trans'">
         传输
+      </el-menu-item>
+      <el-menu-item index="4" @click="toRouter = '/transMsg'">
+        传输状态
       </el-menu-item>
     </el-menu>
   </div>

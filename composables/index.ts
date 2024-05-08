@@ -27,3 +27,7 @@ export const useFileContentType = () => {
 export const useToRouter = () => {
     return useState("toRouter", () => "")
 }
+
+export const useUpdateTransMsg = () => {
+    return useState('updateTransMsg', () => 0)
+}

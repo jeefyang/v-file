@@ -2,6 +2,7 @@
 import type { FileStatusType } from '~/typings';
 import { DArrowRight, DArrowLeft } from '@element-plus/icons-vue'
 import type { ElTable } from 'element-plus';
+import type { EditorTransDataType, TransType } from '~/typings/transData';
 
 const config = await useConfig()
 const leftFileList = ref(<FileStatusType[]>[])
@@ -15,12 +16,12 @@ const rightFileList = ref(<FileStatusType[]>[])
 const rightUrlList = ref([""])
 const rightLoading = ref("")
 const rightDisplay = ref(false)
-const rightClearSelect = ref(0)
-let rightSelectList: FileStatusType[] = []
+// const rightClearSelect = ref(0)
+// let rightSelectList: FileStatusType[] = []
 
 const isVertical = ref(false)
 const isCut = ref(false)
-const isInclude = ref(false)
+const isIncludeDir = ref(false)
 const isurgent = ref(false)
 
 
@@ -55,12 +56,12 @@ const onjumpSite = (site: -1 | 1) => {
 }
 
 const oncolSelect = (site: -1 | 1, rows: FileStatusType[]) => {
-    console.log("select",site)
+    // console.log("select", site)
     if (site == -1) {
         leftSelectList = [...rows]
     }
     else {
-        rightSelectList = [...rows]
+        // rightSelectList = [...rows]
     }
 }
 
@@ -78,29 +79,68 @@ const onopen = async (site: -1 | 1, row: FileStatusType) => {
 }
 
 const ontrans = async () => {
-    leftClearSelect.value += 1
-    rightClearSelect.value += 1
-}
-
-const onresize = () => {
-    console.log('resize')
-    console.log(window.innerWidth, window.innerHeight)
-    if (window.innerWidth > 500) {
-        isVertical.value = false
+    const addList: TransType[] = []
+    if (leftSelectList.length == 0) {
+        ElMessage({ message: "请选中左边文件(夹)", type: "warning" })
+        return
+    }
+    if (leftSelectList.length == 1) {
+        addList.push({
+            from: [config.value?.baseDir, leftUrlList.value.slice(1).join('/'), "/", leftSelectList[0].name].join(''),
+            to: [config.value?.baseDir, rightUrlList.value.slice(1).join('/')].join(''),
+            isIncludeDir: isIncludeDir.value,
+            isCut: isCut.value,
+            isUrgent: isurgent.value
+        })
     }
     else {
-        isVertical.value = true
+        for (let i = 0; i < leftSelectList.length; i++) {
+            let c = leftSelectList[i]
+            addList.push({
+                from: [config.value?.baseDir, leftUrlList.value.slice(1).join('/'), "/", c.name].join(''),
+                to: [config.value?.baseDir, rightUrlList.value.slice(1).join('/')].join(''),
+                isIncludeDir: true,
+                isCut: isCut.value,
+                isUrgent: isurgent.value
+            })
+        }
     }
-}
+    let body: EditorTransDataType = {
+        type: "add",
+        addList
+    }
 
-onMounted(() => {
-    onchangeRouter(-1, leftUrlList.value, false)
-    onchangeRouter(1, rightUrlList.value, false)
-    window.addEventListener("resize", () => {
+    leftLoading.value = "正在触发传输"
+    rightLoading.value = "正在触发传输"
+    let s = await $fetch("/api/transFile", {
+        method: "post",
+        body
+    })
+    leftLoading.value = ""
+    rightLoading.value = ""
+    leftClearSelect.value++
+    ElMessage({
+        message: "已经发送传输指令", type: "success"})
+        // rightClearSelect.value++
+    }
+
+const onresize = () => {
+        if (window.innerWidth > 500) {
+            isVertical.value = false
+        }
+        else {
+            isVertical.value = true
+        }
+    }
+
+    onMounted(() => {
+        onchangeRouter(-1, leftUrlList.value, false)
+        onchangeRouter(1, rightUrlList.value, false)
+        window.addEventListener("resize", () => {
+            onresize()
+        })
         onresize()
     })
-    onresize()
-})
 
 </script>
 <template>
@@ -125,10 +165,9 @@ onMounted(() => {
         </div>
         <!-- 右 -->
         <div :class="'right content ' + (isVertical ? 'vertical' : 'horizontal')" v-show="!isVertical || rightDisplay">
-            <CompleteManageFileList :clear-select="rightClearSelect" :file-list="rightFileList" :url-list="rightUrlList"
+            <CompleteManageFileList :file-list="rightFileList" :url-list="rightUrlList"
                 @change-router="(v, f) => { onchangeRouter(1, v, f) }" :loading="rightLoading"
-                @col-dblclick="(key, row) => { oncolDblclick(1, key, row) }" is-selection
-                @col-select="(rows) => { oncolSelect(1, rows) }">
+                @col-dblclick="(key, row) => { oncolDblclick(1, key, row) }">
                 <template v-slot:option>
                     <el-text type="primary" size="large">右</el-text>
                     <div style="width: 10px;"></div>
@@ -146,7 +185,7 @@ onMounted(() => {
         <div style="width: 10px;"></div>
         <el-switch v-model="isCut" inline-prompt active-text="剪切" inactive-text="复制" size="large" />
         <div style="width: 10px;"></div>
-        <el-switch v-model="isInclude" inline-prompt active-text="不包含文件夹" inactive-text="包含文件夹" size="large" />
+        <el-switch v-model="isIncludeDir" inline-prompt active-text="包含文件夹" inactive-text="不包含文件夹" size="large" />
         <div style="width: 10px;"></div>
         <el-switch v-model="isurgent" inline-prompt active-text="急件" inactive-text="队列" size="large" />
         <div style="width: 10px;"></div>

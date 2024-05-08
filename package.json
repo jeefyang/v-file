@@ -16,12 +16,14 @@
     "element-plus": "^2.7.2",
     "nuxt": "^3.11.2",
     "nuxt-monaco-editor": "^1.2.9",
+    "throttle": "^1.0.3",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@element-plus/nuxt": "^1.0.9",
     "@nuxtjs/color-mode": "^3.4.1",
+    "@types/throttle": "^1.0.4",
     "@vueuse/core": "^10.9.0"
   }
 }
