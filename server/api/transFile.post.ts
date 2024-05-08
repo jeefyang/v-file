@@ -10,7 +10,7 @@ export default defineEventHandler(async (e) => {
         transData.isRunning = false
     }
     if (body.type == "start") {
-        transData.isRunning = true
+        transData.run()
     }
     if (body.type == "limitSpeed") {
         transData.config.limitSpeed = body.limitSpeed || 0

@@ -9,7 +9,7 @@ import Throttle from "throttle"
 class TransData {
 
     /** 运行信息 */
-    config: TransDataType = { list: [], limitSpeed: 0 }
+    config: TransDataType = { list: [], limitSpeed: 10 }
     /** 是否正在运行 */
     isRunning: boolean = false
     /** 当前传输的子链接 */
@@ -87,7 +87,9 @@ class TransData {
             isIncludeDir: child.isIncludeDir,
             status: "ready",
             translatedCount: 0,
-            err: "none"
+            err: "none",
+            ctime: child.ctime,
+            mtime: child.mtime
         }
         if (child.isUrgent) {
             this.config.list.splice(0, 0, obj)
@@ -175,23 +177,31 @@ class TransData {
         if (isIncludeDir) {
             let baseName = path.basename(from)
             newTo = path.join(to, baseName)
+            if (!fs.existsSync(newTo)) {
+                await this.mkDir(newTo)
+                if (this.checkTransingStatus() == "stop") {
+                    return "stop"
+                }
+            }
         }
         for (let i = 0; i < files.length; i++) {
             let f = files[i]
-            let newFrom = path.join(from, f)
-            let stat = await this.fsstat(newFrom)
+            let newFromFile = path.join(from, f)
+            let newToFile = path.join(newTo, f)
+            let stat = await this.fsstat(newFromFile)
             if (this.checkTransingStatus() == "stop") {
                 return "stop"
             }
             if (stat.isDirectory()) {
-                await this.copyDir(newFrom, newTo, isCut, true)
+                await this.copyDir(newFromFile, newToFile, isCut, true)
             }
             else {
                 if (isCut) {
-                    await this.cutFile(newFrom, newTo)
+                    await this.cutFile(newFromFile, newToFile)
                 }
                 else {
-                    await this.copyFile(newFrom, newTo)
+                    console.log(newFromFile, newToFile)
+                    await this.copyFile(newFromFile, newToFile)
                 }
                 if (this.curChild) {
                     this.curChild.translatedCount++
@@ -210,19 +220,21 @@ class TransData {
 
 
     async setChildTrans(child: TransingType): Promise<TransingStatusType> {
-        child.status = "transing"
         if (!fs.existsSync(child.from)) {
             child.err = "noExist"
             child.status = "done"
+            child.mtime = (new Date()).getTime()
             return "stop"
         }
         let stat = await this.copyDir(child.from, child.to, child.isCut, child.isIncludeDir)
         if (stat == "stop") {
             child.status = "stop"
+            child.mtime = (new Date()).getTime()
             return "stop"
         }
         child.isUrgent = false
         child.status = 'done'
+        child.mtime = (new Date()).getTime()
         return "done"
     }
 
@@ -231,6 +243,7 @@ class TransData {
             let l = this.config.list[i]
             this.curChild = l
             l.status = "transing"
+            l.mtime = (new Date()).getTime()
             let s = await this.setChildTrans(l)
             if (s == "stop") {
                 if (this.isRunning) {

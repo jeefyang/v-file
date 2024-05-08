@@ -7,6 +7,10 @@ export type TransType = {
     isIncludeDir: boolean
     /** 是否加急 */
     isUrgent: boolean
+    /** 新建时间 */
+    ctime: number
+    /** 修改时间 */
+    mtime: number
 }
 
 export type TransingStatusType = "done" | "stop" | "ready" | "transing"
@@ -32,13 +36,14 @@ export type TransDataType = {
 
 export type EditorTransDataTypeType = "add" | "editor" | "start" | "stop" | "limitSpeed" | "clear"
 
+export type EditorTransDataTypeEditorType = "delay" | "urgent" | "delete"
+
 export type EditorTransDataType = {
     type: EditorTransDataTypeType
     limitSpeed?: number
     addList?: TransType[]
     editorData?: TransType
-    editorType?: "delay" | "urgent" | "delete"
-
+    editorType?: typeEditorTransDataTypeEditorType
 }
 
 export type editorTransDataResType = {

@@ -84,13 +84,16 @@ const ontrans = async () => {
         ElMessage({ message: "请选中左边文件(夹)", type: "warning" })
         return
     }
+    let time = (new Date()).getTime()
     if (leftSelectList.length == 1) {
         addList.push({
             from: [config.value?.baseDir, leftUrlList.value.slice(1).join('/'), "/", leftSelectList[0].name].join(''),
             to: [config.value?.baseDir, rightUrlList.value.slice(1).join('/')].join(''),
             isIncludeDir: isIncludeDir.value,
             isCut: isCut.value,
-            isUrgent: isurgent.value
+            isUrgent: isurgent.value,
+            mtime: time,
+            ctime: time
         })
     }
     else {
@@ -101,7 +104,9 @@ const ontrans = async () => {
                 to: [config.value?.baseDir, rightUrlList.value.slice(1).join('/')].join(''),
                 isIncludeDir: true,
                 isCut: isCut.value,
-                isUrgent: isurgent.value
+                isUrgent: isurgent.value,
+                mtime: time,
+                ctime: time
             })
         }
     }
@@ -120,27 +125,28 @@ const ontrans = async () => {
     rightLoading.value = ""
     leftClearSelect.value++
     ElMessage({
-        message: "已经发送传输指令", type: "success"})
-        // rightClearSelect.value++
-    }
+        message: "已经发送传输指令", type: "success"
+    })
+    // rightClearSelect.value++
+}
 
 const onresize = () => {
-        if (window.innerWidth > 500) {
-            isVertical.value = false
-        }
-        else {
-            isVertical.value = true
-        }
+    if (window.innerWidth > 500) {
+        isVertical.value = false
     }
+    else {
+        isVertical.value = true
+    }
+}
 
-    onMounted(() => {
-        onchangeRouter(-1, leftUrlList.value, false)
-        onchangeRouter(1, rightUrlList.value, false)
-        window.addEventListener("resize", () => {
-            onresize()
-        })
+onMounted(() => {
+    onchangeRouter(-1, leftUrlList.value, false)
+    onchangeRouter(1, rightUrlList.value, false)
+    window.addEventListener("resize", () => {
         onresize()
     })
+    onresize()
+})
 
 </script>
 <template>
