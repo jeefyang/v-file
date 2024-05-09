@@ -222,11 +222,11 @@ const ontarExtract = async (row: FileStatusType) => {
     if (r.status) {
         loading.value = "正在刷新当前目录"
         await postFileList(true)
-        loading.value=""
+        loading.value = ""
         ElMessage({ message: "解压成功", type: "success" })
         return
     }
-    loading.value=""
+    loading.value = ""
     if (r.err == "noExist") {
         ElMessage({ message: "解压文件不存在", type: "error" })
         return
