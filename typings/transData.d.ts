@@ -57,3 +57,4 @@ export type GetTransMsgType = {
 }
 
 export type AddTransDataErrType = "none" | "same"
+

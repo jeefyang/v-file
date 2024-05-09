@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FileStatusType } from '~/typings';
+import type { FileStatusType, PostTarPackType } from '~/typings';
 import { DArrowRight, DArrowLeft } from '@element-plus/icons-vue'
 import type { ElTable } from 'element-plus';
 import type { EditorTransDataType, TransType } from '~/typings/transData';
@@ -132,6 +132,29 @@ const ontrans = async () => {
     // rightClearSelect.value++
 }
 
+const ontarPack = async (name: string) => {
+    if (leftSelectList.length == 0) {
+        ElMessage({
+            message: "左边没有选中需要压缩的文件(夹)", type: "error"
+        })
+        return
+    }
+    let body: PostTarPackType = {
+        baseDir: config.value?.baseDir || "",
+        filenameList: leftSelectList.map(c => c.name),
+        packDirUrl: path.join(...leftUrlList.value),
+        packName: name + ".tar"
+    }
+    leftLoading.value = "正在压缩文件"
+    let r = await $fetch("/api/tarPack", {
+        method: "post",
+        body
+    })
+    leftLoading.value = "正在刷新当前目录"
+    await postFileList(-1, true)
+    leftLoading.value = ""
+}
+
 const onresize = () => {
     if (window.innerWidth > 500) {
         isVertical.value = false
@@ -161,6 +184,13 @@ onMounted(() => {
                 @col-select="(rows) => { oncolSelect(-1, rows) }">
                 <template v-slot:option>
                     <el-text type="primary" size="large">左</el-text>
+                    <div style="width: 10px;"></div>
+                    <alertInput placeholder="请输入压缩包创建名" :width='200' @enter-click="ontarPack">
+                        <el-button type="primary">
+                            压缩
+                        </el-button>
+                    </alertInput>
+
                     <div style="width: 10px;"></div>
                     <el-button v-if="isVertical" type="primary" @click="onjumpSite(1)">
                         <el-icon size="30px" color="#fff">

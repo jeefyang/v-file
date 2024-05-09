@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EditorFileTypeType, FileStatusType, ManageFileListoprationType, PostCreateFileType, PostDelFileType, PostFileContentType, PostRenameFileType, PostUploadFileType } from '~/typings';
+import type { EditorFileTypeType, FileStatusType, ManageFileListoprationType, PostCreateFileType, PostDelFileType, PostDownloadFileType, PostFileContentType, PostRenameFileType, PostTarExtractType } from '~/typings';
 
 
 // const fileUrl = useFileUrl()
@@ -179,14 +179,74 @@ const onrename = async () => {
     }
 }
 
+const ondownload = async (row: FileStatusType) => {
+    if (row.isDir) {
+        ElMessage({ message: "文件夹无法下载", type: "error" })
+        return
+    }
+    let body: PostDownloadFileType = {
+        baseDir: config.value?.baseDir || "",
+        dirUrl: urlList.value.join('/'),
+        name: row.name
+    }
+    let f = await $fetch("/api/downFile", {
+        method: "post",
+        body,
+    })
+    // console.log(f)
+    const blob = new Blob([(<any>f)]);
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = body.name;
+
+    // Trigger the download
+    document.body.appendChild(link);
+    link.click();
+
+    // Cleanup
+    document.body.removeChild(link);
+}
+
+const ontarExtract = async (row: FileStatusType) => {
+    let body: PostTarExtractType = {
+        baseDir: config.value?.baseDir || "",
+        dirUrl: urlList.value.join('/'),
+        name: row.name,
+        extractDirUrl: urlList.value.join('/')
+    }
+    loading.value = "正在解压文件"
+    const r = await $fetch("/api/tarExtract", {
+        method: "post",
+        body
+    })
+    if (r.status) {
+        loading.value = "正在刷新当前目录"
+        await postFileList(true)
+        loading.value=""
+        ElMessage({ message: "解压成功", type: "success" })
+        return
+    }
+    loading.value=""
+    if (r.err == "noExist") {
+        ElMessage({ message: "解压文件不存在", type: "error" })
+        return
+    }
+    if (r.err == "errExtract") {
+        ElMessage({ message: "解压文件时出现解压错误", type: "error" })
+        return
+    }
+}
+
 const oprations: ManageFileListoprationType[][] = [[
     { name: "打开", clickfunc: onopen },
-    { name: "属性", clickfunc: onproperty }
+    { name: "下载", clickfunc: ondownload }
 ], [
     { name: "删除", clickfunc: ondel },
     {
         name: "更多", children: [
             { name: "重命名", clickfunc: onrenameInit },
+            { name: "解压", clickfunc: ontarExtract },
+            { name: "属性", clickfunc: onproperty },
             { name: "测试", clickfunc: ontest }
         ]
     },

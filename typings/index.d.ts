@@ -124,3 +124,34 @@ type ManageFileListoprationType = {
 
     children?: ManageFileListoprationChildType[]
 } & ManageFileListoprationChildType
+
+type PostTarPackType = {
+    baseDir: string
+    filenameList: string[]
+    packDirUrl: string
+    packName: string
+}
+
+type PostTarPackReturnType = {
+    status: boolean
+    err: "none" | "noExistPackDir"
+    noCompletePackList: string[]
+}
+
+type PostTarExtractType = {
+    baseDir: string
+    dirUrl: string
+    name: string
+    extractDirUrl: string
+}
+
+type PostTarExtractReturnType = {
+    status: boolean
+    err: "none" | "noExist" | "errExtract"
+}
+
+type PostDownloadFileType = {
+    baseDir: string
+    dirUrl: string
+    name: string
+}
