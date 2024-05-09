@@ -9,7 +9,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "pm2:start": "pm2 start ./ecosystem.config.cjs",
-    "pm2:restart":"pm2 start ./ecosystem.config.cjs",
+    "pm2:restart": "pm2 start ./ecosystem.config.cjs",
     "pm2:stop": "pm2 stop ./ecosystem.config.cjs"
   },
   "dependencies": {
@@ -17,6 +17,7 @@
     "element-plus": "^2.7.2",
     "nuxt": "^3.11.2",
     "nuxt-monaco-editor": "^1.2.9",
+    "path-browserify": "^1.0.1",
     "throttle": "^1.0.3",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@element-plus/nuxt": "^1.0.9",
     "@nuxtjs/color-mode": "^3.4.1",
+    "@types/path-browserify": "^1.0.2",
     "@types/throttle": "^1.0.4",
     "@vueuse/core": "^10.9.0"
   }

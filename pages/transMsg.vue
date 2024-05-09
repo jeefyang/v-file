@@ -115,62 +115,75 @@ const setStat = async (r: TransingType, type: EditorTransDataTypeEditorType) => 
 
 </script>
 <template>
-    <div class="status">状态:{{ isRunning ? '运行' : "停止" }}; 速率:{{ speedLimit }}KB</div>
-    <div class="speed">
-        <el-input type="number" v-model="changeSpeedLimit" style="width: 120px"></el-input>
-        <div style="width:10px"></div>
-        <el-button type="primary" @click="onchangeSpeedLimit">更新速率</el-button>
-    </div>
-    <div class="btn">
-        <el-button type="primary" @click="onrefresh">刷新</el-button>
-        <el-button type="primary" @click="onclear">清空</el-button>
-        <el-button type="primary" @click="onstop">停止</el-button>
-        <el-button type="primary" @click="onrun">运行</el-button>
-    </div>
-    <div>
-        <el-table :data="transList" class="table">
+    <div class="content">
+        <div class="status">状态:{{ isRunning ? '运行' : "停止" }}; 速率:{{ speedLimit }}KB</div>
+        <div class="speed">
+            <el-input type="number" v-model="changeSpeedLimit" style="width: 120px"></el-input>
+            <div style="width:10px"></div>
+            <el-button type="primary" @click="onchangeSpeedLimit">更新速率</el-button>
+        </div>
+        <div class="btn">
+            <el-button type="primary" @click="onrefresh">刷新</el-button>
+            <el-button type="primary" @click="onclear">清空</el-button>
+            <el-button type="primary" @click="onstop">停止</el-button>
+            <el-button type="primary" @click="onrun">运行</el-button>
+        </div>
+        <div class="table_content">
+            <el-table :data="transList" class="table">
 
-            <el-table-column prop="from" label="从...复制" width="130" />
-            <el-table-column prop="to" label="粘贴到..." width="130" />
-            <el-table-column prop="translatedCount" label="已传输个数" width="95" />
-            <el-table-column prop="ctime" label="创建时间" width="120" :formatter="formatDateFunc" />
-            <el-table-column prop="mtime" label="修改时间" width="120" :formatter="formatDateFunc" />
-            <el-table-column fixed="right" label="额外信息" width="80">
-                <template #default="scope">
-                    <div>
-                        <el-text type="warning" size="large">{{ displayExtraMsg(scope.row, 'isCut') }}</el-text>
-                    </div>
-                    <div>
-                        <el-text type="warning" size="large">{{ displayExtraMsg(scope.row, 'isUrgent') }}</el-text>
-                    </div>
-                    <div>
-                        <el-text type="warning" size="large">{{ displayExtraMsg(scope.row, 'isIncludeDir') }}</el-text>
-                    </div>
+                <el-table-column prop="from" label="从...复制" width="130" />
+                <el-table-column prop="to" label="粘贴到..." width="130" />
+                <el-table-column prop="translatedCount" label="已传输个数" width="95" />
+                <el-table-column prop="ctime" label="创建时间" width="120" :formatter="formatDateFunc" />
+                <el-table-column prop="mtime" label="修改时间" width="120" :formatter="formatDateFunc" />
+                <el-table-column fixed="right" label="额外信息" width="80">
+                    <template #default="scope">
+                        <div>
+                            <el-text type="warning" size="large">{{ displayExtraMsg(scope.row, 'isCut') }}</el-text>
+                        </div>
+                        <div>
+                            <el-text type="warning" size="large">{{ displayExtraMsg(scope.row, 'isUrgent') }}</el-text>
+                        </div>
+                        <div>
+                            <el-text type="warning" size="large">{{ displayExtraMsg(scope.row, 'isIncludeDir')
+                                }}</el-text>
+                        </div>
 
-                </template>
-            </el-table-column>
-            <el-table-column fixed="right" label="状态" width="100">
-                <template #default="scope">
-                    <div class="btn">
-                        <el-text type="primary" size="large">{{ getStat(scope.row) }}</el-text>
-                    </div>
-                    <div class="btn">
-                        <el-button type="primary" @click="setStat(scope.row, 'delay')">延后</el-button>
-                    </div>
-                    <div class="btn">
-                        <el-button type="primary" @click="setStat(scope.row, 'urgent')">优先</el-button>
-                    </div>
-                    <div class="btn">
-                        <el-button type="primary" @click="setStat(scope.row, 'delete')">删除</el-button>
-                    </div>
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="状态" width="100">
+                    <template #default="scope">
+                        <div class="btn">
+                            <el-text type="primary" size="large">{{ getStat(scope.row) }}</el-text>
+                        </div>
+                        <div class="btn">
+                            <el-button type="primary" @click="setStat(scope.row, 'delay')">延后</el-button>
+                        </div>
+                        <div class="btn">
+                            <el-button type="primary" @click="setStat(scope.row, 'urgent')">优先</el-button>
+                        </div>
+                        <div class="btn">
+                            <el-button type="primary" @click="setStat(scope.row, 'delete')">删除</el-button>
+                        </div>
 
-                </template>
-            </el-table-column>
-        </el-table>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
     </div>
+
 
 </template>
 <style scoped>
+.content {
+    display: flex;
+    flex-direction: column;
+    height: 95%;
+    width: 98%;
+    left:1%;
+    position: relative;
+}
+
 .status {
     margin: 10px;
 }
@@ -185,6 +198,13 @@ const setStat = async (r: TransingType, type: EditorTransDataTypeEditorType) => 
 }
 
 .table {
-    width: 100%
+    width: 100%;
+    height: 100%;
+
+}
+
+.table_content {
+    flex-grow: 1;
+    overflow: auto;
 }
 </style>

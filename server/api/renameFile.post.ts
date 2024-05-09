@@ -2,7 +2,6 @@ import fs from "fs"
 import path from "path"
 import { PostRenameFileType, PostRenameFileReturnType } from "~/typings"
 
-
 export default defineEventHandler(async (e) => {
     const body: PostRenameFileType = await readBody(e)
     let url = path.join(body.baseDir, body.url, body.name)

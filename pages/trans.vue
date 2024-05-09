@@ -3,6 +3,7 @@ import type { FileStatusType } from '~/typings';
 import { DArrowRight, DArrowLeft } from '@element-plus/icons-vue'
 import type { ElTable } from 'element-plus';
 import type { EditorTransDataType, TransType } from '~/typings/transData';
+import path from "path-browserify"
 
 const config = await useConfig()
 const leftFileList = ref(<FileStatusType[]>[])
@@ -87,8 +88,9 @@ const ontrans = async () => {
     let time = (new Date()).getTime()
     if (leftSelectList.length == 1) {
         addList.push({
-            from: [config.value?.baseDir, leftUrlList.value.slice(1).join('/'), "/", leftSelectList[0].name].join(''),
-            to: [config.value?.baseDir, rightUrlList.value.slice(1).join('/')].join(''),
+
+            from: path.join(config.value?.baseDir || "", ...leftUrlList.value, leftSelectList[0].name),
+            to: path.join(config.value?.baseDir || "", ...rightUrlList.value),
             isIncludeDir: isIncludeDir.value,
             isCut: isCut.value,
             isUrgent: isurgent.value,
@@ -100,8 +102,8 @@ const ontrans = async () => {
         for (let i = 0; i < leftSelectList.length; i++) {
             let c = leftSelectList[i]
             addList.push({
-                from: [config.value?.baseDir, leftUrlList.value.slice(1).join('/'), "/", c.name].join(''),
-                to: [config.value?.baseDir, rightUrlList.value.slice(1).join('/')].join(''),
+                from: path.join(config.value?.baseDir || "", ...leftUrlList.value, c.name),
+                to: path.join(config.value?.baseDir || "", ...rightUrlList.value),
                 isIncludeDir: true,
                 isCut: isCut.value,
                 isUrgent: isurgent.value,
