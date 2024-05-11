@@ -30,3 +30,5 @@ config.jsonc
 pnpm-lock.yaml
 
 test
+
+backupTransData.json

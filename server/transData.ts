@@ -1,25 +1,26 @@
-import Trans from '~/components/trans.vue';
 import type { AddTransDataErrType, TransDataType, TransType, TransingStatusType, TransingType } from '~/typings/transData';
 import fs from 'fs'
 import path from "path"
 import Throttle from "throttle"
 
 
-
 class TransData {
 
     /** 运行信息 */
-    config: TransDataType = { list: [], limitSpeed: 10 }
+    config: TransDataType = { list: [], limitSpeed: 10, prevList: [] }
     /** 是否正在运行 */
     isRunning: boolean = false
     /** 当前传输的子链接 */
     curChild: TransingType | undefined = undefined
+    /** 保存路径 */
+    saveUrl: string = "./backupTransData.json"
 
     constructor() {
-
+        this.loadData()
     }
 
-    loadFile(url: string) {
+    loadData(url?: string) {
+        url = url || this.saveUrl
         if (!fs.existsSync(url)) {
             return
         }
@@ -27,7 +28,8 @@ class TransData {
         this.config = JSON.parse(s)
     }
 
-    saveFile(url: string) {
+    saveData(url?: string) {
+        url = url || this.saveUrl
         let s = JSON.stringify(this.config)
         fs.writeFileSync(url, s, "utf-8")
     }
@@ -155,6 +157,9 @@ class TransData {
     }
 
     checkTransingStatus(): TransingStatusType {
+        if (!this.isRunning) {
+            return "stop"
+        }
         let first = this.config.list[0]
         if (!first) {
             return "stop"
@@ -200,7 +205,6 @@ class TransData {
                     await this.cutFile(newFromFile, newToFile)
                 }
                 else {
-                    console.log(newFromFile, newToFile)
                     await this.copyFile(newFromFile, newToFile)
                 }
                 if (this.curChild) {
@@ -245,6 +249,7 @@ class TransData {
             l.status = "transing"
             l.mtime = (new Date()).getTime()
             let s = await this.setChildTrans(l)
+            this.saveData()
             if (s == "stop") {
                 if (this.isRunning) {
                     return await this._loopRun()
@@ -264,12 +269,15 @@ class TransData {
         if (this.config.list.length == 0) {
             return
         }
+        this.saveData()
         this.isRunning = true
         let stat = await this._loopRun()
         if (stat == "done") {
+            this.config.prevList = this.config.list
             this.config.list = []
             this.isRunning = false
         }
+        this.saveData()
         return
     }
 
