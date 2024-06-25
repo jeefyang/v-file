@@ -8,11 +8,6 @@ const editorFileUrl = useEditorFileUrl()
 const updateTransMsg = useUpdateTransMsg()
 const toRouter = useToRouter()
 const route = useRoute();
-const config = await useConfig()
-
-if (config?.value?.title) {
-  document.title = config.value.title
-}
 
 // console.log(nuxtApp)
 
@@ -40,13 +35,20 @@ const changeRouter = (p?: string, isToRouter?: boolean) => {
 
 }
 
-onMounted(() => {
+onMounted(async () => {
   const isDark = useDark()
   useToggle(isDark)
   watch([toRouter], (v) => {
     changeRouter(v[0], true)
   })
   changeRouter(route.path)
+
+  /** 标题头 */
+  const config = await useConfig()
+  if (config?.value?.title) {
+    document.title = config.value.title
+  }
+
 
   if (route.path == "/text") {
     toRouter.value = "/"
