@@ -5,7 +5,10 @@ import type { ElTable } from 'element-plus';
 import type { EditorTransDataType, TransType } from '~/typings/transData';
 import path from "path-browserify"
 
+
 const config = await useConfig()
+
+const leftUrlKey = "transPageLeftUrl"
 const leftFileList = ref(<FileStatusType[]>[])
 const leftUrlList = ref([""])
 const leftLoading = ref("")
@@ -13,6 +16,7 @@ const leftDisplay = ref(true)
 const leftClearSelect = ref(0)
 let leftSelectList: FileStatusType[] = []
 
+const rightUrlKey = "transPageRightUrl"
 const rightFileList = ref(<FileStatusType[]>[])
 const rightUrlList = ref([""])
 const rightLoading = ref("")
@@ -25,13 +29,22 @@ const isCut = ref(false)
 const isIncludeDir = ref(false)
 const isurgent = ref(false)
 
-
 const postFileList = async (site: -1 | 1, forceRefresh?: boolean) => {
     const a = await useFileList({
         baseDir: config.value?.baseDir || "./",
         url: (site == -1 ? leftUrlList : rightUrlList).value.join('/'),
         ignore: (config.value?.ignore || []).join("||")
     }, forceRefresh);
+    if (a.isErrorUrl) {
+        (site == -1 ? leftUrlList : rightUrlList).value = [""]
+    }
+    if ((site == -1 ? leftUrlList : rightUrlList).value.length == 1) {
+        localStorage.setItem((site == -1 ? leftUrlKey : rightUrlKey), (site == -1 ? leftUrlList : rightUrlList).value[0]);
+    }
+    else {
+        localStorage.setItem((site == -1 ? leftUrlKey : rightUrlKey), (site == -1 ? leftUrlList : rightUrlList).value.join(";"));
+    }
+
     (site == -1 ? leftFileList : rightFileList).value.splice(0, (site == -1 ? leftFileList : rightFileList).value.length);
     (site == -1 ? leftFileList : rightFileList).value.push(...a?.list || []);
 }
@@ -49,6 +62,7 @@ const onchangeRouter = async (site: -1 | 1, v: string[], forceRefresh: boolean) 
     (site == -1 ? leftLoading : rightLoading).value = "正在刷新当前目录";
     await postFileList(site, forceRefresh);
     (site == -1 ? leftLoading : rightLoading).value = "";
+    ElMessage({ message: `${site == -1 ? '左' : "右"}加载成功`, type: "success" })
 }
 
 const onjumpSite = (site: -1 | 1) => {
@@ -165,6 +179,14 @@ const onresize = () => {
 }
 
 onMounted(() => {
+    const leftStorageUrlData = localStorage.getItem(leftUrlKey)
+    if (leftStorageUrlData) {
+        leftUrlList.value = leftStorageUrlData.split(';')
+    }
+    const rightStorageUrlData = localStorage.getItem(rightUrlKey)
+    if (rightStorageUrlData) {
+        rightUrlList.value = rightStorageUrlData.split(';')
+    }
     onchangeRouter(-1, leftUrlList.value, false)
     onchangeRouter(1, rightUrlList.value, false)
     window.addEventListener("resize", () => {

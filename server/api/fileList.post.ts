@@ -5,8 +5,10 @@ import { FileStatusType, PostFileListReturnType, PostFileListType } from "~/typi
 export default defineEventHandler(async (e) => {
     const body: PostFileListType = await readBody(e)
     let url = path.join(body.baseDir, body.url)
+    let isErrorUrl: boolean = false
     if (!fs.existsSync(url)) {
         body.url = '.'
+        isErrorUrl = true
     }
     url = path.join(body.baseDir, body.url)
     let files = fs.readdirSync(url)
@@ -51,6 +53,8 @@ export default defineEventHandler(async (e) => {
         }
         a.isDir ? (folderList.push(a)) : (fileList.push(a))
     }
-
-    return { url: body.url, baseDir: body.baseDir, list: [...folderList, ...fileList] } as PostFileListReturnType
+    let r: PostFileListReturnType = {
+        url: body.url, baseDir: body.baseDir, list: [...folderList, ...fileList], isErrorUrl
+    }
+    return r
 })

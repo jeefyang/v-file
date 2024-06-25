@@ -3,10 +3,11 @@ import type { EditorFileTypeType, FileStatusType, ManageFileListoprationType, Po
 
 
 // const fileUrl = useFileUrl()
+const urlKey = "firstPageUrl"
 const config = await useConfig()
 const fileList = ref(<FileStatusType[]>[])
-const urlList = ref([""])
-const loading = ref("")
+const urlList = ref<string[]>([""])
+const loading = ref<string>("")
 const editorFileUrl = useEditorFileUrl()
 const displayEditorFile = useDisplayEditorFile()
 const fileContent = useFileContent()
@@ -15,17 +16,35 @@ const toRouter = useToRouter()
 const popLoading = ref("")
 let selectFileStatus: FileStatusType | null = null
 
+onMounted(async () => {
+    const storageUrlData = localStorage.getItem(urlKey)
+    if (storageUrlData) {
+        urlList.value = storageUrlData.split(';')
+    }
+
+    await postFileList()
+})
+
 const postFileList = async (forceRefresh?: boolean) => {
     const a = await useFileList({
         baseDir: config.value?.baseDir || "./",
         url: urlList.value.join('/'),
         ignore: (config.value?.ignore || []).join("||")
     }, forceRefresh)
+    if (a.isErrorUrl) {
+        urlList.value = [""]
+    }
+    if (urlList.value.length == 1) {
+        localStorage.setItem(urlKey, urlList.value[0])
+    }
+    else {
+        localStorage.setItem(urlKey, urlList.value.join(";"))
+    }
+
     fileList.value.splice(0, fileList.value.length)
     fileList.value.push(...a?.list || [])
 }
 
-await postFileList()
 
 
 const onopen = async (row: FileStatusType, type: EditorFileTypeType = "utf-8") => {
@@ -119,6 +138,7 @@ const onchangeRouter = async (v: string[], forceUpdate: boolean) => {
     loading.value = "正在刷新当前目录"
     await postFileList(forceUpdate)
     loading.value = ""
+    ElMessage({ message: "加载成功", type: "success" })
 }
 
 const renameVisible = ref(false)

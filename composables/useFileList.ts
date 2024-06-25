@@ -6,6 +6,7 @@ export default async function (body: PostFileListType, forceRefresh?: boolean) {
     let c = list.find(c => c.body.url == body.url && c.body.baseDir == body.baseDir && c.body.ignore == body.ignore)
     if (!forceRefresh) {
         if (c) {
+            c.content.isErrorUrl = false
             return c.content
         }
     }

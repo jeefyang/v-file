@@ -16,6 +16,7 @@ type PostFileListReturnType = {
     url: string,
     baseDir: string
     list: FileStatusType[]
+    isErrorUrl: boolean
 }
 
 type PostFileContentType = {
