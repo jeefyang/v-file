@@ -8,6 +8,11 @@ const editorFileUrl = useEditorFileUrl()
 const updateTransMsg = useUpdateTransMsg()
 const toRouter = useToRouter()
 const route = useRoute();
+const config = await useConfig()
+
+if (config?.value?.title) {
+  document.title = config.value.title
+}
 
 // console.log(nuxtApp)
 

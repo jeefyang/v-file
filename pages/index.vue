@@ -14,6 +14,7 @@ const fileContentType = useFileContentType()
 const toRouter = useToRouter()
 const popLoading = ref("")
 let selectFileStatus: FileStatusType | null = null
+
 const postFileList = async (forceRefresh?: boolean) => {
     const a = await useFileList({
         baseDir: config.value?.baseDir || "./",

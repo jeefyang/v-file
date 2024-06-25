@@ -3,6 +3,7 @@ import fs from "fs"
 type ConfigType = {
     baseDir: string
     ignore: string[]
+    title?: string
 }
 
 type PostFileListType = {
