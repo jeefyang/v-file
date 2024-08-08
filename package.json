@@ -14,12 +14,15 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
+    "crypto": "^1.0.1",
+    "dexie": "^4.0.8",
     "element-plus": "^2.7.2",
     "nuxt": "^3.11.2",
     "nuxt-monaco-editor": "^1.2.9",
     "path-browserify": "^1.0.1",
     "tar": "^7.1.0",
     "throttle": "^1.0.3",
+    "uuid": "^10.0.0",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   },
@@ -29,6 +32,7 @@
     "@types/path-browserify": "^1.0.2",
     "@types/tar": "^6.1.13",
     "@types/throttle": "^1.0.4",
+    "@types/uuid": "^10.0.0",
     "@vueuse/core": "^10.9.0"
   }
 }

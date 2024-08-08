@@ -31,3 +31,11 @@ export const useToRouter = () => {
 export const useUpdateTransMsg = () => {
     return useState('updateTransMsg', () => 0)
 }
+
+export const useBottomMsgContent = () => {
+    return useState("bottomMsgContent", () => "")
+}
+
+export const useBottomMsgType = () => {
+    return useState('bottomMsgType', (): "success" | "warning" | "info" | "primary" | "danger" => "primary")
+}

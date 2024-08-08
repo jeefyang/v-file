@@ -26,6 +26,8 @@ const displayAlertDiv = ref<{ x: number, y: number }>()
 const alertDivChildren = ref<ManageFileListoprationChildType[]>([])
 const alertDivRow = ref<FileStatusType>()
 const multipleTableRef = ref<InstanceType<typeof ElTable>>()
+const isMoreOprationOverY = ref(false)
+
 onMounted(() => {
 
     onClickOutside(alertDiv.value, (e) => {
@@ -64,10 +66,18 @@ const oprationMoreClick = (e: MouseEvent, v: FileStatusType, children: ManageFil
     alertDivChildren.value = [...children]
     if (!displayAlertDiv.value) {
         displayAlertDiv.value = { x: e.clientX, y: e.clientY }
+        if (e.clientY > window.innerHeight * 0.75) {
+            isMoreOprationOverY.value = true
+        }
+        else {
+            isMoreOprationOverY.value = false
+        }
+
     }
     else {
         displayAlertDiv.value = <any>(null)
     }
+
 
 }
 
@@ -146,12 +156,15 @@ const formatSizeFunc = (row: FileStatusType, _col: any, cell: string) => {
     </el-table>
     <div ref="alertDiv" class="alert" v-show="!!displayAlertDiv"
         :style="{ left: (displayAlertDiv?.x || 0) + 'px', top: (displayAlertDiv?.y || 0) + 'px' }">
-        <div v-for="c in alertDivChildren">
-            <el-button link type="primary" size="small"
-                @click="c.clickfunc && c?.clickfunc(<any>alertDivRow); displayAlertDiv = <any>null">
-                {{ c.name }}
-            </el-button>
+        <div :class="isMoreOprationOverY ? 'moreOprationUp' : 'moreOprationDown'">
+            <div v-for="c in alertDivChildren">
+                <el-button link type="primary" size="small"
+                    @click="c.clickfunc && c?.clickfunc(<any>alertDivRow); displayAlertDiv = <any>null">
+                    {{ c.name }}
+                </el-button>
+            </div>
         </div>
+
 
     </div>
 </template>
@@ -191,6 +204,18 @@ const formatSizeFunc = (row: FileStatusType, _col: any, cell: string) => {
 
 .alert div {
     margin: 5px;
+}
+
+.moreOprationUp {
+    position: absolute;
+    bottom: 0px;
+    background-color: #26292a;
+}
+
+.moreOprationDown {
+    position: absolute;
+    top: 0px;
+    background-color: #26292a;
 }
 
 /* 

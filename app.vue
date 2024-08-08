@@ -8,7 +8,8 @@ const editorFileUrl = useEditorFileUrl()
 const updateTransMsg = useUpdateTransMsg()
 const toRouter = useToRouter()
 const route = useRoute();
-
+const bottomMsgContent = useBottomMsgContent()
+bottomMsgContent.value = "正在加载中..."
 // console.log(nuxtApp)
 
 
@@ -36,6 +37,7 @@ const changeRouter = (p?: string, isToRouter?: boolean) => {
 }
 
 onMounted(async () => {
+  bottomMsgContent.value = "正在读取配置"
   const isDark = useDark()
   useToggle(isDark)
   watch([toRouter], (v) => {
@@ -54,6 +56,7 @@ onMounted(async () => {
     toRouter.value = "/"
     navigateTo('/')
   }
+  bottomMsgContent.value = "加载完成"
 })
 
 

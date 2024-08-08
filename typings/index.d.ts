@@ -19,6 +19,8 @@ type PostFileListReturnType = {
     isErrorUrl: boolean
 }
 
+
+
 type PostFileContentType = {
     baseDir: string
     url: string
@@ -156,4 +158,12 @@ type PostDownloadFileType = {
     baseDir: string
     dirUrl: string
     name: string
+}
+
+type PostDownloadSplitFileType = {
+    baseDir: string
+    dirUrl: string
+    name:string
+    start:number
+    end:number
 }

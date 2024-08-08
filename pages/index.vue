@@ -1,19 +1,31 @@
 <script setup lang="ts">
 import type { EditorFileTypeType, FileStatusType, ManageFileListoprationType, PostCreateFileType, PostDelFileType, PostDownloadFileType, PostFileContentType, PostRenameFileType, PostTarExtractType } from '~/typings';
 
+import { DownSplitFileSys } from "../utils/downSplitFileSys"
+import { ElMessage, ElMessageBox } from 'element-plus'
+
 
 // const fileUrl = useFileUrl()
 const urlKey = "firstPageUrl"
 const config = await useConfig()
 const fileList = ref(<FileStatusType[]>[])
+const curSplitFile = ref(<FileStatusType | null>null)
+const splitFileSize = ref(100)
 const urlList = ref<string[]>([""])
 const loading = ref<string>("")
+const displaySplitDownload = ref(<boolean>false)
 const editorFileUrl = useEditorFileUrl()
 const displayEditorFile = useDisplayEditorFile()
 const fileContent = useFileContent()
 const fileContentType = useFileContentType()
 const toRouter = useToRouter()
+const bottomMsgContent = useBottomMsgContent()
+const bottomMsgType = useBottomMsgType()
+
 const popLoading = ref("")
+
+const splitFileSys = new DownSplitFileSys()
+
 let selectFileStatus: FileStatusType | null = null
 
 onMounted(async () => {
@@ -21,8 +33,9 @@ onMounted(async () => {
     if (storageUrlData) {
         urlList.value = storageUrlData.split(';')
     }
-
+    bottomMsgContent.value = "初次读取文件列表中..."
     await postFileList()
+    bottomMsgContent.value = "初次读取文件列表完成"
 })
 
 const postFileList = async (forceRefresh?: boolean) => {
@@ -258,6 +271,69 @@ const ontarExtract = async (row: FileStatusType) => {
     }
 }
 
+
+
+
+const onopenSplitDownload = async (row: FileStatusType) => {
+    if (row.isDir) {
+        ElMessage({ message: "文件夹无法下载", type: "warning" })
+        return
+    }
+    curSplitFile.value = row
+    displaySplitDownload.value = true
+}
+
+const onsplitdownload = async () => {
+    let file = curSplitFile.value
+    displaySplitDownload.value = false
+    if (file == null) {
+        ElMessage({ message: "无法找到下载文件", type: "warning" })
+        return
+    }
+    if ((curSplitFile.value?.size || 0) <= 0) {
+        ElMessage({ message: "切片不能小于0", type: "warning" })
+        return
+    }
+    let dirUrl = urlList.value.join('/')
+    let name = curSplitFile.value?.name || ""
+    await splitFileSys.downloadSplitFile(config.value?.baseDir || "", dirUrl, name, curSplitFile.value?.size || 0, 1024 * splitFileSize.value, (type, int, len) => {
+        if (type == "splitDownload") {
+            bottomMsgContent.value = `${dirUrl}/${name} 已经下载 ${int}/${len}`
+        }
+        else if (type == "merge") {
+            bottomMsgContent.value = `${dirUrl}/${name} 正在合并文件 ${int}/${len}`
+        }
+        else if (type == "delSplit") {
+            bottomMsgContent.value = `${dirUrl}/${name} 正在删除缓存切片`
+        }
+        else if (type == "delFile") {
+            bottomMsgContent.value = `${dirUrl}/${name} 正在删除缓存文件指针`
+        }
+    })
+    let c = await splitFileSys.hasOther()
+    if (c) {
+        await ElMessageBox.confirm(
+            '还有其他文件缓存,需要删除吗?',
+            'Warning',
+            {
+                confirmButtonText: '删除',
+                cancelButtonText: '取消',
+                type: 'warning',
+            }
+        )
+            .then(async () => {
+                bottomMsgContent.value = `${dirUrl}/${name} 正在清除所有下载缓存`
+                await splitFileSys.clearSplit()
+                await splitFileSys.clearFile()
+            })
+            .catch(() => {
+                return
+            })
+    }
+    bottomMsgContent.value = `${dirUrl}/${name} 下载完成`
+    return
+}
+
 const oprations: ManageFileListoprationType[][] = [[
     { name: "打开", clickfunc: onopen },
     { name: "下载", clickfunc: ondownload }
@@ -268,6 +344,7 @@ const oprations: ManageFileListoprationType[][] = [[
             { name: "重命名", clickfunc: onrenameInit },
             { name: "解压", clickfunc: ontarExtract },
             { name: "属性", clickfunc: onproperty },
+            { name: "切片下载", clickfunc: onopenSplitDownload },
             { name: "测试", clickfunc: ontest }
         ]
     },
@@ -369,8 +446,11 @@ const oncreate = async (name: string, isDir: boolean) => {
 
             </template>
         </CompleteManageFileList>
-    </div>
 
+    </div>
+    <div class="bottom">
+        <el-text class="mx-1" :type="bottomMsgType">{{ bottomMsgContent }}</el-text>
+    </div>
     <!-- 上传弹出层 -->
     <el-drawer v-model="uploadVisible" :show-close="false" direction='ttb' :loading="popLoading">
         <fileUpload @upload="onupload"></fileUpload>
@@ -391,19 +471,32 @@ const oncreate = async (name: string, isDir: boolean) => {
     </el-drawer>
     <!-- <editor></editor> -->
     <!-- <div>index!!!</div> -->
+    <popDiv v-model:visible="displaySplitDownload" :width="300" :height="150">
+        <p>分段下载大小 /kb</p>
+        <el-input v-model="splitFileSize" type='number' size="large" :style="{ width: '200px' }"></el-input>
+        <!-- 间隔 -->
+        <div style="height:10px"></div>
+        <el-button type="primary" @click="onsplitdownload">下载</el-button>
+    </popDiv>
+
 </template>
 <style scoped>
 .content {
     /* position: fixed; */
     top: 10px;
     left: 10px;
-    width: calc(100% - 10px);
-    height: calc(100% - 10px);
+    width: calc(100% - 40px);
+    height: calc(100% - 40px);
     /* overflow: auto; */
     display: flex;
     flex-direction: column;
 }
 
+.bottom {
+    margin-top: 5px;
+    border: 2px solid #aaa;
+    border-radius: 5px;
+}
 
 
 .margin {
